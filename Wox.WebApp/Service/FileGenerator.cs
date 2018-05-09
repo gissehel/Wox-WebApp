@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using Wox.WebApp.Core.Service;
 
 namespace Wox.WebApp.Service

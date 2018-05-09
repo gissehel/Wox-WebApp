@@ -20,5 +20,9 @@ namespace Wox.WebApp.Core.Service
         void RemoveUrl(string url);
 
         void Export();
+
+        bool FileExists(string path);
+
+        void Import(string path);
     }
 }

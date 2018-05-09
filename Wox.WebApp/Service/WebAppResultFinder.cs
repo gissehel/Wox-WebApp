@@ -33,6 +33,9 @@ namespace Wox.WebApp.Service
                 case "remove":
                     return GetRemoveResults(query);
 
+                case "import":
+                    return GetImportResults(query);
+
                 default:
                     var commands = GetCommandHelp(query.FirstTerm);
                     if (commands.Any())
@@ -160,6 +163,36 @@ namespace Wox.WebApp.Service
                     )
                 )
                 .ToList();
+        }
+
+        private IEnumerable<WoxResult> GetImportResults(WoxQuery query)
+        {
+            if (query.SearchTerms.Length > 1)
+            {
+                var filename = string.Join(" ", query.SearchTerms.Skip(1).ToArray());
+                if (WebAppService.FileExists(filename))
+                {
+                    yield return GetActionResult
+                    (
+                        string.Format("import {0}", filename),
+                        string.Format("Import urls from [{0}]", filename),
+                        () => WebAppService.Import(filename)
+                    );
+                }
+                else
+                {
+                    yield return GetCompletionResultFinal
+                    (
+                        string.Format("import {0}", filename),
+                        string.Format("[{0}] does not exists", filename),
+                        () => string.Format("import {0}", filename)
+                    );
+                }
+            }
+            else
+            {
+                yield return HelpImport;
+            }
         }
 
         private WoxResult _helpList = null;

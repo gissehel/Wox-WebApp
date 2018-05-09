@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Wox.WebApp.Core.Service;
 
 namespace Wox.WebApp.Mock.Service

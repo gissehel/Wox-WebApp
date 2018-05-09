@@ -24,7 +24,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
+    <DebugType>none</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="AllGreenTests.cs" />
     <Compile Include="Fixture\Command_line_started_fixture.cs" />
+    <Compile Include="Fixture\Generate_file_fixture.cs" />
     <Compile Include="Fixture\Last_file_generated_fixture.cs" />
     <Compile Include="Fixture\Wox_bar_fixture.cs" />
     <Compile Include="Fixture\Wox_results_fixture.cs" />
@@ -60,6 +61,7 @@
     <Compile Include="Test\Change_configuration.cs" />
     <Compile Include="Test\Export_urls_to_file.cs" />
     <Compile Include="Test\Get_basic_help.cs" />
+    <Compile Include="Test\Import_urls_from_file.cs" />
     <Compile Include="Test\Prepare_common_context.cs" />
     <Compile Include="Test\Remove_url.cs" />
     <Compile Include="Test\Remove_url_with_existing_superurl.cs" />

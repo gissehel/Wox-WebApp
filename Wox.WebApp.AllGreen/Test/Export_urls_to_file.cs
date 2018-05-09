@@ -1,10 +1,6 @@
 ﻿using AllGreen.Lib;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Wox.WebApp.AllGreen.Helper;
 using Wox.WebApp.AllGreen.Fixture;
+using Wox.WebApp.AllGreen.Helper;
 
 namespace Wox.WebApp.AllGreen.Test
 {
@@ -39,10 +35,10 @@ namespace Wox.WebApp.AllGreen.Test
             .With<Last_file_generated_fixture.Result>(f => f.Line)
             .Check("# launcher: chrome.exe")
             .Check("# argumentsPattern: --app=\"{0}\"")
-            .Check("https://google.com/ google search engine")
-            .Check("https://bing.com/ bing search engine")
-            .Check("https://stackoverflow.com/ questions answers")
-            .Check("https://netflix.com/ video")
+            .Check("https://google.com/ (google search engine)")
+            .Check("https://bing.com/ (bing search engine)")
+            .Check("https://stackoverflow.com/ (questions answers)")
+            .Check("https://netflix.com/ (video)")
             .EndUsing()
 
             .EndTest();

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Wox.WebApp.Core.Service;
 using Wox.WebApp.DomainModel;
 
@@ -15,14 +16,16 @@ namespace Wox.WebApp.Service
         private ISystemService SystemService { get; set; }
 
         private IFileGeneratorService FileGeneratorService { get; set; }
+        private IFileReaderService FileReaderService { get; set; }
 
-        public WebAppService(IDataAccessService dataAccessService, IWebAppItemRepository webAppItemRepository, IWebAppConfigurationRepository webAppConfigurationRepository, ISystemService systemService, IFileGeneratorService fileGeneratorService)
+        public WebAppService(IDataAccessService dataAccessService, IWebAppItemRepository webAppItemRepository, IWebAppConfigurationRepository webAppConfigurationRepository, ISystemService systemService, IFileGeneratorService fileGeneratorService, IFileReaderService fileReaderService)
         {
             DataAccessService = dataAccessService;
             WebAppItemRepository = webAppItemRepository;
             WebAppConfigurationRepository = webAppConfigurationRepository;
             SystemService = systemService;
             FileGeneratorService = fileGeneratorService;
+            FileReaderService = fileReaderService;
         }
 
         public void Init()
@@ -97,11 +100,62 @@ namespace Wox.WebApp.Service
                 fileGenerator.AddLine(string.Format("# argumentsPattern: {0}", configuration.WebAppArgumentPattern));
                 foreach (var webAppItem in WebAppItemRepository.SearchItems(new List<string>()))
                 {
-                    fileGenerator.AddLine(string.Format("{0} {1}", webAppItem.Url, webAppItem.Keywords));
+                    fileGenerator.AddLine(string.Format("{0} ({1})", webAppItem.Url, webAppItem.Keywords));
                 }
                 fileGenerator.Generate();
             }
             SystemService.StartCommandLine(exportDirectory, "");
+        }
+
+        public bool FileExists(string path) => FileReaderService.FileExists(path);
+
+        public void Import(string path)
+        {
+            using (var fileReader = FileReaderService.Read(path))
+            {
+                var line = fileReader.ReadLine();
+                while (line != null)
+                {
+                    line = line.Trim(' ', '\t', '\r', '\n');
+                    if (line.StartsWith("#"))
+                    {
+                        if (line.Contains(":"))
+                        {
+                            var indexOfSeperater = line.IndexOf(":");
+                            var key = line.Substring(0, indexOfSeperater).Trim(' ', '\t', '\r', '\n');
+                            var value = line.Substring(indexOfSeperater + 1, line.Length - indexOfSeperater - 1).Trim(' ', '\t', '\r', '\n');
+                            var configuration = GetConfiguration();
+                            var changed = false;
+                            if (key == "launcher")
+                            {
+                                configuration.WebAppLauncher = value;
+                                changed = true;
+                            }
+                            if (key == "argumentsPattern")
+                            {
+                                configuration.WebAppArgumentPattern = value;
+                                changed = true;
+                            }
+                            if (changed)
+                            {
+                                WebAppConfigurationRepository.SaveConfiguration(configuration);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var elements = line.Split(' ');
+                        var url = elements[0];
+                        var keywords = string.Join(" ", elements.Skip(1).Where(e => e.Length > 0).ToArray());
+                        keywords = keywords.TrimStart('(', ' ', '\t', '\r', '\n').TrimEnd(')', ' ', '\t', '\r', '\n');
+                        if (!string.IsNullOrEmpty(url))
+                        {
+                            AddWebAppItem(url, keywords);
+                        }
+                    }
+                    line = fileReader.ReadLine();
+                }
+            }
         }
     }
 }
