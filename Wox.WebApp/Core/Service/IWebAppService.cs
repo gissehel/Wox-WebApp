@@ -18,5 +18,7 @@ namespace Wox.WebApp.Core.Service
         WebAppConfiguration GetConfiguration();
 
         void RemoveUrl(string url);
+
+        void Export();
     }
 }

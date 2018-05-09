@@ -17,6 +17,10 @@ namespace Wox.WebApp.Service
 
         public string ApplicationDataPath => _applicationDataPath ?? (_applicationDataPath = GetApplicationDataPath());
 
+        public string GetExportPath() => ApplicationDataPath;
+
+        public string GetUID() => string.Format("{0:yyyyMMdd-HHmmss-fff}", DateTime.Now);
+
         private string GetApplicationDataPath()
         {
             var appDataPathParent = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);

@@ -21,7 +21,8 @@ namespace Wox.WebApp
             IDataAccessService dataAccessService = new DataAccessService(systemService);
             IWebAppItemRepository webAppItemRepository = new WebAppItemRepository(dataAccessService);
             IWebAppConfigurationRepository webAppConfigurationRepository = new WebAppConfigurationRepository(dataAccessService);
-            IWebAppService webAppService = new WebAppService(dataAccessService, webAppItemRepository, webAppConfigurationRepository, systemService);
+            IFileGeneratorService fileGeneratorService = new FileGeneratorService();
+            IWebAppService webAppService = new WebAppService(dataAccessService, webAppItemRepository, webAppConfigurationRepository, systemService, fileGeneratorService);
             IWoxResultFinder woxWebAppResultFinder = new WebAppResultFinder(woxContextService, webAppService);
 
             webAppService.Init();

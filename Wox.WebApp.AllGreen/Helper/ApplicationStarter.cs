@@ -14,6 +14,7 @@ namespace Wox.WebApp.AllGreen.Helper
         public SystemServiceMock SystemService { get; set; }
         public IWoxResultFinder WoxWebAppResultFinder { get; set; }
         private IWebAppService WebAppService { get; set; }
+        public FileGeneratorServiceMock FileGeneratorService { get; set; }
         private string TestName { get; set; }
 
         public string TestPath => SystemService.ApplicationDataPath;
@@ -27,7 +28,8 @@ namespace Wox.WebApp.AllGreen.Helper
             IDataAccessService dataAccessService = new DataAccessService(systemService);
             IWebAppItemRepository webAppItemRepository = new WebAppItemRepository(dataAccessService);
             IWebAppConfigurationRepository webAppConfigurationRepository = new WebAppConfigurationRepository(dataAccessService);
-            IWebAppService webAppService = new WebAppService(dataAccessService, webAppItemRepository, webAppConfigurationRepository, systemService);
+            FileGeneratorServiceMock fileGeneratorService = new FileGeneratorServiceMock();
+            IWebAppService webAppService = new WebAppService(dataAccessService, webAppItemRepository, webAppConfigurationRepository, systemService, fileGeneratorService);
             IWoxResultFinder woxWebAppResultFinder = new WebAppResultFinder(woxContextService, webAppService);
 
             systemService.ApplicationDataPath = GetApplicationDataPath();
@@ -36,6 +38,7 @@ namespace Wox.WebApp.AllGreen.Helper
             QueryService = queryService;
             SystemService = systemService;
             WebAppService = webAppService;
+            FileGeneratorService = fileGeneratorService;
             WoxWebAppResultFinder = woxWebAppResultFinder;
 
             WoxContextService.AddQueryFetcher("wap", WoxWebAppResultFinder);

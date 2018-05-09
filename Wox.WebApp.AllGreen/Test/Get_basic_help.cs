@@ -32,6 +32,8 @@ namespace Wox.WebApp.AllGreen.Test
             .Check("config [APP_PATH] [APP_ARGUMENT_PATTERN]", "Configure a new webapp launcher")
             .Check("add URL [KEYWORD] [KEYWORD] [...]", "Add a new url (or update an existing) with associated keywords")
             .Check("remove URL", "Remove an existing url")
+            .Check("export", "Export urls to a file")
+            .Check("import FILENAME", "Import urls from FILENAME")
             .EndUsing()
 
              .Using<Wox_bar_fixture>()
@@ -42,6 +44,8 @@ namespace Wox.WebApp.AllGreen.Test
             .With<Wox_results_fixture.Result>(f => f.Title, f => f.SubTitle)
             .Check("config [APP_PATH] [APP_ARGUMENT_PATTERN]", "Configure a new webapp launcher")
             .Check("remove URL", "Remove an existing url")
+            .Check("export", "Export urls to a file")
+            .Check("import FILENAME", "Import urls from FILENAME")
             .EndUsing()
 
           .EndTest();

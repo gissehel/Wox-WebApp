@@ -5,5 +5,9 @@
         void StartCommandLine(string command, string arguments);
 
         string ApplicationDataPath { get; }
+
+        string GetExportPath();
+
+        string GetUID();
     }
 }

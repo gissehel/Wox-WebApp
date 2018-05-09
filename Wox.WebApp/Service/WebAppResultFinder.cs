@@ -166,11 +166,15 @@ namespace Wox.WebApp.Service
         private WoxResult _helpConfig = null;
         private WoxResult _helpAdd = null;
         private WoxResult _helpRemove = null;
+        private WoxResult _helpExport = null;
+        private WoxResult _helpImport = null;
 
         private WoxResult HelpList => _helpList ?? (_helpList = GetCompletionResult("list [PATTERN] [PATTERN] [...]", "List all url matching patterns", () => "list"));
         private WoxResult HelpConfig => _helpConfig ?? (_helpConfig = GetCompletionResult("config [APP_PATH] [APP_ARGUMENT_PATTERN]", "Configure a new webapp launcher", () => "config"));
         private WoxResult HelpAdd => _helpAdd ?? (_helpAdd = GetCompletionResult("add URL [KEYWORD] [KEYWORD] [...]", "Add a new url (or update an existing) with associated keywords", () => "add"));
         private WoxResult HelpRemove => _helpRemove ?? (_helpRemove = GetCompletionResult("remove URL", "Remove an existing url", () => "remove"));
+        private WoxResult HelpExport => _helpExport ?? (_helpExport = GetActionResult("export", "Export urls to a file", WebAppService.Export));
+        private WoxResult HelpImport => _helpImport ?? (_helpImport = GetCompletionResult("import FILENAME", "Import urls from FILENAME", () => "import"));
 
         private bool PatternMatch(string pattern, string command) => string.IsNullOrEmpty(pattern) || command.Contains(pattern);
 
@@ -180,6 +184,8 @@ namespace Wox.WebApp.Service
             if (PatternMatch(pattern, "config")) yield return HelpConfig;
             if (PatternMatch(pattern, "add")) yield return HelpAdd;
             if (PatternMatch(pattern, "remove")) yield return HelpRemove;
+            if (PatternMatch(pattern, "export")) yield return HelpExport;
+            if (PatternMatch(pattern, "import")) yield return HelpImport;
         }
 
         public WoxResult GetActionResult(string title, string subTitle, Action action) => new WoxResult

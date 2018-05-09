@@ -51,12 +51,14 @@
   <ItemGroup>
     <Compile Include="AllGreenTests.cs" />
     <Compile Include="Fixture\Command_line_started_fixture.cs" />
+    <Compile Include="Fixture\Last_file_generated_fixture.cs" />
     <Compile Include="Fixture\Wox_bar_fixture.cs" />
     <Compile Include="Fixture\Wox_results_fixture.cs" />
     <Compile Include="Helper\ApplicationStarter.cs" />
     <Compile Include="Helper\WebAppContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Test\Change_configuration.cs" />
+    <Compile Include="Test\Export_urls_to_file.cs" />
     <Compile Include="Test\Get_basic_help.cs" />
     <Compile Include="Test\Prepare_common_context.cs" />
     <Compile Include="Test\Remove_url.cs" />

@@ -13,5 +13,9 @@ namespace Wox.WebApp.Mock.Service
         {
             CommandLineStarted.Add(new KeyValuePair<string, string>(command, arguments));
         }
+
+        public string GetExportPath() => @".\ExportDirectory";
+
+        public string GetUID() => "UID";
     }
 }

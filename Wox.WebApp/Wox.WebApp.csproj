@@ -50,6 +50,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\Service\IDataAccessService.cs" />
+    <Compile Include="Core\Service\IFileGenerator.cs" />
+    <Compile Include="Core\Service\IFileGeneratorService.cs" />
     <Compile Include="Core\Service\IQueryService.cs" />
     <Compile Include="Core\Service\IResultService.cs" />
     <Compile Include="Core\Service\ISystemService.cs" />
@@ -66,6 +68,8 @@
     <Compile Include="Service\DataAccessQuery.cs" />
     <Compile Include="Service\DataAccessQueryWithResult.cs" />
     <Compile Include="Service\DataAccessService.cs" />
+    <Compile Include="Service\FileGenerator.cs" />
+    <Compile Include="Service\FileGeneratorService.cs" />
     <Compile Include="Service\QueryService.cs" />
     <Compile Include="Service\ResultService.cs" />
     <Compile Include="Service\SystemService.cs" />

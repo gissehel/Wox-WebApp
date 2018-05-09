@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using Wox.WebApp.Core.Service;
 using Wox.WebApp.DomainModel;
 
@@ -13,12 +14,15 @@ namespace Wox.WebApp.Service
 
         private ISystemService SystemService { get; set; }
 
-        public WebAppService(IDataAccessService dataAccessService, IWebAppItemRepository webAppItemRepository, IWebAppConfigurationRepository webAppConfigurationRepository, ISystemService systemService)
+        private IFileGeneratorService FileGeneratorService { get; set; }
+
+        public WebAppService(IDataAccessService dataAccessService, IWebAppItemRepository webAppItemRepository, IWebAppConfigurationRepository webAppConfigurationRepository, ISystemService systemService, IFileGeneratorService fileGeneratorService)
         {
             DataAccessService = dataAccessService;
             WebAppItemRepository = webAppItemRepository;
             WebAppConfigurationRepository = webAppConfigurationRepository;
             SystemService = systemService;
+            FileGeneratorService = fileGeneratorService;
         }
 
         public void Init()
@@ -80,5 +84,24 @@ namespace Wox.WebApp.Service
         public WebAppConfiguration GetConfiguration() => WebAppConfigurationRepository.GetConfiguration();
 
         public void RemoveUrl(string url) => WebAppItemRepository.RemoveItem(url);
+
+        public void Export()
+        {
+            var exportDirectory = SystemService.GetExportPath();
+            var exportFilename = string.Format("Wox.WebApp-Save-{0}.wap.txt", SystemService.GetUID());
+            var exportFullFilename = Path.Combine(exportDirectory, exportFilename);
+            using (var fileGenerator = FileGeneratorService.CreateGenerator(exportFullFilename))
+            {
+                var configuration = GetConfiguration();
+                fileGenerator.AddLine(string.Format("# launcher: {0}", configuration.WebAppLauncher));
+                fileGenerator.AddLine(string.Format("# argumentsPattern: {0}", configuration.WebAppArgumentPattern));
+                foreach (var webAppItem in WebAppItemRepository.SearchItems(new List<string>()))
+                {
+                    fileGenerator.AddLine(string.Format("{0} {1}", webAppItem.Url, webAppItem.Keywords));
+                }
+                fileGenerator.Generate();
+            }
+            SystemService.StartCommandLine(exportDirectory, "");
+        }
     }
 }
