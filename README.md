@@ -1,4 +1,9 @@
-﻿# Wox WebApp plugin
+﻿# To intall in Wox
+```
+wpm install WebApp launcher
+```
+
+# Wox WebApp plugin
 
 A Wox plugin to start url in a "Web app" mode.
 
