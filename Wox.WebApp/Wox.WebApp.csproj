@@ -83,6 +83,7 @@
     <Compile Include="Service\WebAppService.cs" />
     <Compile Include="Service\WoxContextService.cs" />
     <Compile Include="WebAppPlugin.cs" />
+    <Compile Include="..\Version.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

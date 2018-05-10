@@ -66,6 +66,7 @@
     <Compile Include="Test\Remove_url.cs" />
     <Compile Include="Test\Remove_url_with_existing_superurl.cs" />
     <Compile Include="Test\Search_urls.cs" />
+    <Compile Include="..\Version.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

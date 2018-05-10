@@ -46,6 +46,7 @@
     <Compile Include="Service\QueryServiceMock.cs" />
     <Compile Include="Service\SystemServiceMock.cs" />
     <Compile Include="Service\WoxContextServiceMock.cs" />
+    <Compile Include="..\Version.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Wox.WebApp\Wox.WebApp.csproj">
