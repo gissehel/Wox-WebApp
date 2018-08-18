@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Wox.WebApp.DomainModel;
 
 namespace Wox.WebApp.Core.Service
 {
-    public interface IWebAppService
+    public interface IWebAppService : IDisposable
     {
         void Init();
 

@@ -161,5 +161,10 @@ namespace Wox.WebApp.Service
                 }
             }
         }
+
+        public void Dispose()
+        {
+            DataAccessService.Dispose();
+        }
     }
 }

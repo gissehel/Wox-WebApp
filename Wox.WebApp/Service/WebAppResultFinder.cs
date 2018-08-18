@@ -181,5 +181,10 @@ namespace Wox.WebApp.Service
                 yield return GetEmptyCommandResult("import", CommandInfos);
             }
         }
+
+        public override void Dispose()
+        {
+            WebAppService.Dispose();
+        }
     }
 }
