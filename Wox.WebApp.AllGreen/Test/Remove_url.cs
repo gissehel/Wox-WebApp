@@ -15,24 +15,26 @@ namespace Wox.WebApp.AllGreen.Test
 
             .DoAction(f => f.Write_query("wap rem"))
             .DoCheck(f => f.The_number_of_results_is(), "1")
-            .DoCheck(f => f.The_title_of_result__is(1), "remove URL")
+            .DoCheck(f => f.The_title_of_result__is(1), "remove [URL|PATTERN]")
             .DoCheck(f => f.The_subtitle_of_result__is(1), "Remove an existing url")
             .DoAction(f => f.Select_line(1))
             .DoAccept(f => f.Wox_is_displayed())
 
             .DoCheck(f => f.The_current_query_is(), "wap remove ")
-            .DoCheck(f => f.The_number_of_results_is(), "1")
-            .DoCheck(f => f.The_title_of_result__is(1), "remove URL|PATTERN")
-            .DoCheck(f => f.The_subtitle_of_result__is(1), "Remove an existing url")
-            .DoAction(f => f.Select_line(1))
-            .DoAccept(f => f.Wox_is_displayed())
+            .DoCheck(f => f.The_number_of_results_is(), "4")
+            .EndUsing()
 
-            .DoCheck(f => f.The_current_query_is(), "wap remove ")
-            .DoCheck(f => f.The_number_of_results_is(), "1")
-            .DoCheck(f => f.The_title_of_result__is(1), "remove URL|PATTERN")
-            .DoCheck(f => f.The_subtitle_of_result__is(1), "Remove an existing url")
+            .UsingList<Wox_results_fixture>()
+            .With<Wox_results_fixture.Result>(f => f.Title, f => f.SubTitle)
+            .Check("remove https://google.com/", "Prepare to remove https://google.com/")
+            .Check("remove https://bing.com/", "Prepare to remove https://bing.com/")
+            .Check("remove https://stackoverflow.com/", "Prepare to remove https://stackoverflow.com/")
+            .Check("remove https://netflix.com/", "Prepare to remove https://netflix.com/")
+            .EndUsing()
 
             .Comment("Instead of writting an url, we're going to write a search term")
+
+            .Using<Wox_bar_fixture>()
 
             .DoAction(f => f.Append__on_query("bing"))
             .DoCheck(f => f.The_number_of_results_is(), "1")

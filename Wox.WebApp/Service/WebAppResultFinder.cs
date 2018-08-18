@@ -12,50 +12,47 @@ namespace Wox.WebApp.Service
 
         public WebAppResultFinder(IWoxContextService woxContextService, IWebAppService webAppService) : base(woxContextService)
         {
-            WoxContextService = woxContextService;
             WebAppService = webAppService;
         }
 
-        public override IEnumerable<WoxResult> GetResults(WoxQuery query)
+        public void Init()
         {
-            switch (query.FirstTerm)
-            {
-                case "list":
-                    return GetList(query.SearchTerms.Skip(1));
+            AddCommand("list", "list [PATTERN] [PATTERN] [...]", "List all url matching patterns", GetListResults);
+            AddCommand("config", "config [APP_PATH] [APP_ARGUMENT_PATTERN]", "Configure a new webapp launcher", GetConfigResults);
+            AddCommand("add", "add URL [KEYWORD] [KEYWORD] [...]", "Add a new url (or update an existing) with associated keywords", GetAddResults);
+            AddCommand("remove", "remove [URL|PATTERN]", "Remove an existing url", GetRemoveResults);
+            AddCommand("export", "export", "Export urls to a file", ExportCommandAction);
+            AddCommand("import", "import FILENAME", "Import urls from FILENAME", GetImportResults);
 
-                case "config":
-                    return GetConfig(query);
-
-                case "add":
-                    return GetAddResults(query);
-
-                case "remove":
-                    return GetRemoveResults(query);
-
-                case "import":
-                    return GetImportResults(query);
-
-                default:
-                    var commands = GetCommandHelp(query.FirstTerm);
-                    if (commands.Any())
-                    {
-                        return commands;
-                    }
-                    return GetList(query.SearchTerms);
-            }
+            AddDefaultCommand(GetListResults);
         }
 
-        private IEnumerable<WoxResult> GetConfig(WoxQuery query)
+        private IEnumerable<WoxResult> GetListResults(WoxQuery query, int position)
+        {
+            var terms = query.SearchTerms.Skip(position);
+            return WebAppService
+                .Search(terms)
+                .Select
+                (
+                    item => GetActionResult
+                    (
+                        string.Format("Start {0}", item.Url),
+                        string.Format("Start the url {0} ({1})", item.Url, item.Keywords),
+                        () =>
+                        {
+                            WebAppService.StartUrl(item.Url);
+                        }
+                    )
+                );
+        }
+
+        private IEnumerable<WoxResult> GetConfigResults(WoxQuery query, int position)
         {
             var configuration = WebAppService.GetConfiguration();
-            if (query.SearchTerms.Length > 1)
+            if (query.SearchTerms.Length > position)
             {
-                var launcher = query.SearchTerms[1];
-                string arguments = null;
-                if (query.SearchTerms.Length > 2)
-                {
-                    arguments = string.Join(" ", query.SearchTerms.Skip(2).ToArray());
-                }
+                var launcher = query.SearchTerms[position];
+                string arguments = query.GetAllSearchTermsStarting(position + 1);
                 string argumentsCommandLine = arguments ?? "[APP_ARGUMENT_PATTERN]";
                 string argumentsReal = arguments ?? configuration.WebAppArgumentPattern;
 
@@ -77,16 +74,22 @@ namespace Wox.WebApp.Service
             }
             else
             {
-                yield return GetCompletionResultFinal("config [APP_PATH] [APP_ARGUMENT_PATTERN]", "Configure a new webapp launcher - Select this item to complete the current config", () => string.Format("config {0} {1}", configuration.WebAppLauncher, configuration.WebAppArgumentPattern));
+                var emptyResult = GetEmptyCommandResult("config", CommandInfos);
+                yield return GetCompletionResultFinal
+                    (
+                        emptyResult.Title,
+                        "{0} - Select this item to complete the current config".FormatWith(emptyResult.SubTitle),
+                        () => string.Format("config {0} {1}", configuration.WebAppLauncher, configuration.WebAppArgumentPattern)
+                    );
             }
         }
 
-        private IEnumerable<WoxResult> GetAddResults(WoxQuery query)
+        private IEnumerable<WoxResult> GetAddResults(WoxQuery query, int position)
         {
-            if (query.SearchTerms.Length > 1)
+            var url = query.GetTermOrEmpty(position);
+            if (!string.IsNullOrEmpty(url))
             {
-                var url = query.SearchTerms[1];
-                var keywords = string.Join(" ", query.SearchTerms.Skip(2).ToArray());
+                var keywords = query.GetAllSearchTermsStarting(position + 1);
                 yield return GetActionResult
                     (
                         string.Format("add {0} {1}", url, keywords),
@@ -99,22 +102,20 @@ namespace Wox.WebApp.Service
             }
             else
             {
-                yield return HelpAdd;
+                yield return GetEmptyCommandResult("add", CommandInfos);
             }
         }
 
-        private IEnumerable<WoxResult> GetRemoveResults(WoxQuery query)
+        private IEnumerable<WoxResult> GetRemoveResults(WoxQuery query, int position)
         {
-            if (query.SearchTerms.Length > 1)
+            var webAppItems = WebAppService
+                .Search(query.SearchTerms.Skip(position));
+            string urlTyped = null;
+            if (query.SearchTerms.Length == position + 1)
             {
-                var webAppItems = WebAppService
-                    .Search(query.SearchTerms.Skip(1));
-                string urlTyped = null;
-                if (query.SearchTerms.Length == 2)
-                {
-                    urlTyped = query.SearchTerms[1];
-                }
-                var results = webAppItems
+                urlTyped = query.SearchTerms[position];
+            }
+            var results = webAppItems
                 .Select
                 (
                     item =>
@@ -134,6 +135,8 @@ namespace Wox.WebApp.Service
                             () => string.Format("remove {0}", item.Url)
                         )
                 );
+            if (results.Count() > 0)
+            {
                 foreach (var result in results)
                 {
                     yield return result;
@@ -141,40 +144,23 @@ namespace Wox.WebApp.Service
             }
             else
             {
-                yield return GetCompletionResult("remove URL|PATTERN", "Remove an existing url", () => "remove");
+                yield return GetEmptyCommandResult("remove", CommandInfos);
             }
         }
 
-        public IEnumerable<WoxResult> GetList(IEnumerable<string> terms)
-        {
-            return WebAppService
-                .Search(terms)
-                .Select
-                (
-                    item => GetActionResult
-                    (
-                        string.Format("Start {0}", item.Url),
-                        string.Format("Start the url {0} ({1})", item.Url, item.Keywords),
-                        () =>
-                        {
-                            WebAppService.StartUrl(item.Url);
-                        }
-                    )
-                )
-                .ToList();
-        }
+        private void ExportCommandAction() => WebAppService.Export();
 
-        private IEnumerable<WoxResult> GetImportResults(WoxQuery query)
+        private IEnumerable<WoxResult> GetImportResults(WoxQuery query, int position)
         {
-            if (query.SearchTerms.Length > 1)
+            var filename = query.GetAllSearchTermsStarting(position);
+            if (!string.IsNullOrEmpty(filename))
             {
-                var filename = string.Join(" ", query.SearchTerms.Skip(1).ToArray());
                 if (WebAppService.FileExists(filename))
                 {
                     yield return GetActionResult
                     (
-                        string.Format("import {0}", filename),
-                        string.Format("Import urls from [{0}]", filename),
+                        "import {0}".FormatWith(filename),
+                        "Import urls from [{0}]".FormatWith(filename),
                         () => WebAppService.Import(filename)
                     );
                 }
@@ -182,42 +168,16 @@ namespace Wox.WebApp.Service
                 {
                     yield return GetCompletionResultFinal
                     (
-                        string.Format("import {0}", filename),
-                        string.Format("[{0}] does not exists", filename),
-                        () => string.Format("import {0}", filename)
+                        "import {0}".FormatWith(filename),
+                        "[{0}] does not exists".FormatWith(filename),
+                        () => "import {0}".FormatWith(filename)
                     );
                 }
             }
             else
             {
-                yield return HelpImport;
+                yield return GetEmptyCommandResult("import", CommandInfos);
             }
-        }
-
-        private WoxResult _helpList = null;
-        private WoxResult _helpConfig = null;
-        private WoxResult _helpAdd = null;
-        private WoxResult _helpRemove = null;
-        private WoxResult _helpExport = null;
-        private WoxResult _helpImport = null;
-
-        private WoxResult HelpList => _helpList ?? (_helpList = GetCompletionResult("list [PATTERN] [PATTERN] [...]", "List all url matching patterns", () => "list"));
-        private WoxResult HelpConfig => _helpConfig ?? (_helpConfig = GetCompletionResult("config [APP_PATH] [APP_ARGUMENT_PATTERN]", "Configure a new webapp launcher", () => "config"));
-        private WoxResult HelpAdd => _helpAdd ?? (_helpAdd = GetCompletionResult("add URL [KEYWORD] [KEYWORD] [...]", "Add a new url (or update an existing) with associated keywords", () => "add"));
-        private WoxResult HelpRemove => _helpRemove ?? (_helpRemove = GetCompletionResult("remove URL", "Remove an existing url", () => "remove"));
-        private WoxResult HelpExport => _helpExport ?? (_helpExport = GetActionResult("export", "Export urls to a file", WebAppService.Export));
-        private WoxResult HelpImport => _helpImport ?? (_helpImport = GetCompletionResult("import FILENAME", "Import urls from FILENAME", () => "import"));
-
-        private bool PatternMatch(string pattern, string command) => string.IsNullOrEmpty(pattern) || command.Contains(pattern);
-
-        private IEnumerable<WoxResult> GetCommandHelp(string pattern)
-        {
-            if (PatternMatch(pattern, "list")) yield return HelpList;
-            if (PatternMatch(pattern, "config")) yield return HelpConfig;
-            if (PatternMatch(pattern, "add")) yield return HelpAdd;
-            if (PatternMatch(pattern, "remove")) yield return HelpRemove;
-            if (PatternMatch(pattern, "export")) yield return HelpExport;
-            if (PatternMatch(pattern, "import")) yield return HelpImport;
         }
     }
 }
