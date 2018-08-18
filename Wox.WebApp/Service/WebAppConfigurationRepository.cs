@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using FluentDataAccess.Core.Service;
+using System.Linq;
 using Wox.WebApp.Core.Service;
 using Wox.WebApp.DomainModel;
 

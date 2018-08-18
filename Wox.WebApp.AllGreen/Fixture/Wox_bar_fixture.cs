@@ -1,7 +1,7 @@
 ﻿using AllGreen.Lib;
 using System.Linq;
+using Wox.EasyHelper;
 using Wox.WebApp.AllGreen.Helper;
-using Wox.WebApp.DomainModel;
 
 namespace Wox.WebApp.AllGreen.Fixture
 {

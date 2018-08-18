@@ -1,18 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using Wox.EasyHelper.Test.Mock.Service;
 using Wox.WebApp.Core.Service;
 
 namespace Wox.WebApp.Mock.Service
 {
-    public class SystemServiceMock : ISystemService
+    public class SystemWebAppServiceMock : SystemServiceMock, ISystemWebAppService
     {
-        public string ApplicationDataPath { get; set; }
-
-        public List<KeyValuePair<string, string>> CommandLineStarted { get; private set; } = new List<KeyValuePair<string, string>>();
-
-        public void StartCommandLine(string command, string arguments)
-        {
-            CommandLineStarted.Add(new KeyValuePair<string, string>(command, arguments));
-        }
+        public string DatabaseName => ApplicationName;
 
         public string GetExportPath() => @".\ExportDirectory";
 

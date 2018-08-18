@@ -1,23 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Wox.EasyHelper;
+using Wox.EasyHelper.Core.Service;
 using Wox.WebApp.Core.Service;
-using Wox.WebApp.DomainModel;
 
 namespace Wox.WebApp.Service
 {
-    public class WebAppResultFinder : IWoxResultFinder
+    public class WebAppResultFinder : WoxResultFinderBase
     {
-        private IWoxContextService WoxContextService { get; set; }
         private IWebAppService WebAppService { get; set; }
 
-        public WebAppResultFinder(IWoxContextService woxContextService, IWebAppService webAppService)
+        public WebAppResultFinder(IWoxContextService woxContextService, IWebAppService webAppService) : base(woxContextService)
         {
             WoxContextService = woxContextService;
             WebAppService = webAppService;
         }
 
-        public IEnumerable<WoxResult> GetResults(WoxQuery query)
+        public override IEnumerable<WoxResult> GetResults(WoxQuery query)
         {
             switch (query.FirstTerm)
             {
@@ -220,33 +219,5 @@ namespace Wox.WebApp.Service
             if (PatternMatch(pattern, "export")) yield return HelpExport;
             if (PatternMatch(pattern, "import")) yield return HelpImport;
         }
-
-        public WoxResult GetActionResult(string title, string subTitle, Action action) => new WoxResult
-        {
-            Title = title,
-            SubTitle = subTitle,
-            Action = () =>
-            {
-                action();
-                WoxContextService.ChangeQuery("");
-            },
-            ShouldClose = true,
-        };
-
-        public WoxResult GetCompletionResult(string title, string subTitle, Func<string> getNewQuery) => new WoxResult
-        {
-            Title = title,
-            SubTitle = subTitle,
-            Action = () => WoxContextService.ChangeQuery(WoxContextService.ActionKeyword + WoxContextService.Seperater + getNewQuery() + WoxContextService.Seperater),
-            ShouldClose = false,
-        };
-
-        public WoxResult GetCompletionResultFinal(string title, string subTitle, Func<string> getNewQuery) => new WoxResult
-        {
-            Title = title,
-            SubTitle = subTitle,
-            Action = () => WoxContextService.ChangeQuery(WoxContextService.ActionKeyword + WoxContextService.Seperater + getNewQuery()),
-            ShouldClose = false,
-        };
     }
 }

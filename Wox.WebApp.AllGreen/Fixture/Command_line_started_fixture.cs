@@ -19,10 +19,10 @@ namespace Wox.WebApp.AllGreen.Fixture
                 .ApplicationStarter
                 .SystemService
                 .CommandLineStarted
-                .Select(pair => new Result
+                .Select(commandLine => new Result
                 {
-                    Command = pair.Key,
-                    Arguments = pair.Value
+                    Command = commandLine.Command,
+                    Arguments = commandLine.Arguments
                 }).ToList();
             return result.Cast<object>();
         }

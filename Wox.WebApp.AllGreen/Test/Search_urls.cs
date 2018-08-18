@@ -67,11 +67,6 @@ namespace Wox.WebApp.AllGreen.Test
             .Check("chrome.exe", "--app=\"https://netflix.com/\"")
             .EndUsing()
 
-            .Using<Wox_bar_fixture>()
-            .DoAction(f => f.Display_wox())
-            .DoCheck(f => f.The_current_query_is(), "")
-            .EndUsing()
-
             .EndTest();
     }
 }

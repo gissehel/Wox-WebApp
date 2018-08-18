@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using FluentDataAccess.Core.Service;
+using FluentDataAccess.Service;
+using System.Collections.Generic;
+using Wox.EasyHelper.Core.Service;
+using Wox.EasyHelper.Service;
 using Wox.Plugin;
 using Wox.WebApp.Core.Service;
 using Wox.WebApp.Service;
@@ -16,14 +20,14 @@ namespace Wox.WebApp
         {
             IWoxContextService woxContextService = new WoxContextService(context);
             IQueryService queryService = new QueryService();
-            IResultService resultService = new ResultService();
-            ISystemService systemService = new SystemService("Wox.WebApp");
-            IDataAccessService dataAccessService = new DataAccessService(systemService);
+            IResultService resultService = new ResultService(woxContextService);
+            ISystemWebAppService systemWebAppService = new SystemWebAppService("Wox.WebApp");
+            IDataAccessService dataAccessService = new DataAccessService(systemWebAppService);
             IWebAppItemRepository webAppItemRepository = new WebAppItemRepository(dataAccessService);
             IWebAppConfigurationRepository webAppConfigurationRepository = new WebAppConfigurationRepository(dataAccessService);
             IFileGeneratorService fileGeneratorService = new FileGeneratorService();
             IFileReaderService fileReaderService = new FileReaderService();
-            IWebAppService webAppService = new WebAppService(dataAccessService, webAppItemRepository, webAppConfigurationRepository, systemService, fileGeneratorService, fileReaderService);
+            IWebAppService webAppService = new WebAppService(dataAccessService, webAppItemRepository, webAppConfigurationRepository, systemWebAppService, fileGeneratorService, fileReaderService);
             IWoxResultFinder woxWebAppResultFinder = new WebAppResultFinder(woxContextService, webAppService);
 
             webAppService.Init();

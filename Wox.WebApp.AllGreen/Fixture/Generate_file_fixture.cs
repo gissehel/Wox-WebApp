@@ -1,6 +1,6 @@
 ﻿using AllGreen.Lib;
+using Wox.EasyHelper.Test.Mock.Service;
 using Wox.WebApp.AllGreen.Helper;
-using Wox.WebApp.Mock.Service;
 
 namespace Wox.WebApp.AllGreen.Fixture
 {

@@ -1,6 +1,10 @@
-﻿using System;
+﻿using FluentDataAccess.Core.Service;
+using FluentDataAccess.Service;
+using System;
 using System.IO;
 using System.Reflection;
+using Wox.EasyHelper.Core.Service;
+using Wox.EasyHelper.Test.Mock.Service;
 using Wox.WebApp.Core.Service;
 using Wox.WebApp.Mock.Service;
 using Wox.WebApp.Service;
@@ -11,7 +15,7 @@ namespace Wox.WebApp.AllGreen.Helper
     {
         public WoxContextServiceMock WoxContextService { get; set; }
         public QueryServiceMock QueryService { get; set; }
-        public SystemServiceMock SystemService { get; set; }
+        public SystemWebAppServiceMock SystemService { get; set; }
         public IWoxResultFinder WoxWebAppResultFinder { get; set; }
         private IWebAppService WebAppService { get; set; }
         public FileGeneratorServiceMock FileGeneratorService { get; set; }
@@ -25,7 +29,7 @@ namespace Wox.WebApp.AllGreen.Helper
             TestName = testName;
             QueryServiceMock queryService = new QueryServiceMock();
             WoxContextServiceMock woxContextService = new WoxContextServiceMock(queryService);
-            SystemServiceMock systemService = new SystemServiceMock();
+            SystemWebAppServiceMock systemService = new SystemWebAppServiceMock();
             IDataAccessService dataAccessService = new DataAccessService(systemService);
             IWebAppItemRepository webAppItemRepository = new WebAppItemRepository(dataAccessService);
             IWebAppConfigurationRepository webAppConfigurationRepository = new WebAppConfigurationRepository(dataAccessService);

@@ -52,7 +52,6 @@ namespace Wox.WebApp.AllGreen.Test
             .DoAction(f => f.Select_line(1))
             .DoReject(f => f.Wox_is_displayed())
             .DoAction(f => f.Display_wox())
-            .DoCheck(f => f.The_current_query_is(), "")
             .DoAction(f => f.Write_query("wap list"))
 
             .EndUsing()

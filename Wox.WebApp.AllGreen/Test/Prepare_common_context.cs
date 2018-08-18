@@ -19,7 +19,6 @@ namespace Wox.WebApp.AllGreen.Test
             .DoReject(f => f.Wox_is_displayed())
 
             .DoAction(f => f.Display_wox())
-            .DoCheck(f => f.The_current_query_is(), "")
             .DoAction(f => f.Write_query("wap add https://bing.com/ bing search engine"))
             .DoAction(f => f.Select_line(1))
 

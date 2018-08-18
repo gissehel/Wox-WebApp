@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Wox.EasyHelper.Test.Mock" Version="1.0.4" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <ProjectReference Include="..\Wox.WebApp\Wox.WebApp.csproj" />
   </ItemGroup>
 

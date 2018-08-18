@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using FluentDataAccess.Core.Service;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Wox.EasyHelper.Core.Service;
 using Wox.WebApp.Core.Service;
 using Wox.WebApp.DomainModel;
 
@@ -9,16 +11,18 @@ namespace Wox.WebApp.Service
     public class WebAppService : IWebAppService
     {
         private IDataAccessService DataAccessService { get; set; }
+
         private IWebAppItemRepository WebAppItemRepository { get; set; }
 
         private IWebAppConfigurationRepository WebAppConfigurationRepository { get; set; }
 
-        private ISystemService SystemService { get; set; }
+        private ISystemWebAppService SystemService { get; set; }
 
         private IFileGeneratorService FileGeneratorService { get; set; }
+
         private IFileReaderService FileReaderService { get; set; }
 
-        public WebAppService(IDataAccessService dataAccessService, IWebAppItemRepository webAppItemRepository, IWebAppConfigurationRepository webAppConfigurationRepository, ISystemService systemService, IFileGeneratorService fileGeneratorService, IFileReaderService fileReaderService)
+        public WebAppService(IDataAccessService dataAccessService, IWebAppItemRepository webAppItemRepository, IWebAppConfigurationRepository webAppConfigurationRepository, ISystemWebAppService systemService, IFileGeneratorService fileGeneratorService, IFileReaderService fileReaderService)
         {
             DataAccessService = dataAccessService;
             WebAppItemRepository = webAppItemRepository;
