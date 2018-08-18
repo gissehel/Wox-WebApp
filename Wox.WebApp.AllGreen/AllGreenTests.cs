@@ -7,18 +7,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Wox.EasyHelper;
 using Wox.WebApp.AllGreen.Helper;
 
 namespace Wox.WebApp.AllGreen
-
 {
-    [TestFixture]
     public class AllGreenTests
     {
         private ITestRunnerService _testRunnerService = null;
         private ITestRunnerService TestRunnerService => _testRunnerService ?? (_testRunnerService = new TestRunnerService());
 
-        private Dictionary<string, TestScript<WebAppContext>> GetTestScripts()
+        private static Dictionary<string, TestScript<WebAppContext>> GetTestScripts()
         {
             var testScripts = new Dictionary<string, TestScript<WebAppContext>>();
             var allRunnableTestScripts = Assembly
@@ -37,10 +36,10 @@ namespace Wox.WebApp.AllGreen
             return testScripts;
         }
 
-        private Dictionary<string, TestScript<WebAppContext>> _testScripts = null;
-        private Dictionary<string, TestScript<WebAppContext>> TestScripts => _testScripts ?? (_testScripts = GetTestScripts());
+        private static Dictionary<string, TestScript<WebAppContext>> _testScripts = null;
+        private static Dictionary<string, TestScript<WebAppContext>> TestScripts => _testScripts ?? (_testScripts = GetTestScripts());
 
-        private IEnumerable<string> GetTestScriptNames() => TestScripts.Keys.OrderBy(name => name);
+        private static IEnumerable<string> GetTestScriptNames() => TestScripts.Keys.OrderBy(name => name);
 
         [TestCaseSource(nameof(GetTestScriptNames))]
         public void Run(string name)
@@ -51,7 +50,7 @@ namespace Wox.WebApp.AllGreen
             }
             else
             {
-                Assert.Fail(string.Format("Don't know [{0}] as a test name !", name));
+                Assert.Fail("Don't know [{0}] as a test name !".FormatWith(name));
             }
         }
 
