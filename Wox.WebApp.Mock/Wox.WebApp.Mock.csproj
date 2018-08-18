@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Wox.EasyHelper.Test.Mock" Version="1.0.4" />
+    <PackageReference Include="Wox.EasyHelper.Test.Mock" Version="1.0.6" />
   </ItemGroup>
   
   <ItemGroup>

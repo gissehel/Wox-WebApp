@@ -3,6 +3,7 @@ using FluentDataAccess.Service;
 using System;
 using System.IO;
 using System.Reflection;
+using Wox.EasyHelper.Core.Service;
 using Wox.EasyHelper.Test.Mock.Service;
 using Wox.WebApp.Core.Service;
 using Wox.WebApp.Mock.Service;
@@ -15,7 +16,7 @@ namespace Wox.WebApp.AllGreen.Helper
         public WoxContextServiceMock WoxContextService { get; set; }
         public QueryServiceMock QueryService { get; set; }
         public SystemWebAppServiceMock SystemService { get; set; }
-        public WebAppResultFinder WoxWebAppResultFinder { get; set; }
+        public IWoxResultFinder WoxWebAppResultFinder { get; set; }
         private IWebAppService WebAppService { get; set; }
         public FileGeneratorServiceMock FileGeneratorService { get; set; }
         public FileReaderServiceMock FileReaderService { get; set; }
@@ -35,7 +36,7 @@ namespace Wox.WebApp.AllGreen.Helper
             FileGeneratorServiceMock fileGeneratorService = new FileGeneratorServiceMock();
             FileReaderServiceMock fileReaderService = new FileReaderServiceMock();
             IWebAppService webAppService = new WebAppService(dataAccessService, webAppItemRepository, webAppConfigurationRepository, systemService, fileGeneratorService, fileReaderService);
-            WebAppResultFinder woxWebAppResultFinder = new WebAppResultFinder(woxContextService, webAppService);
+            IWoxResultFinder woxWebAppResultFinder = new WebAppResultFinder(woxContextService, webAppService);
 
             systemService.ApplicationDataPath = GetApplicationDataPath();
 
@@ -52,7 +53,6 @@ namespace Wox.WebApp.AllGreen.Helper
 
         public void Start()
         {
-            WebAppService.Init();
             WoxWebAppResultFinder.Init();
         }
 

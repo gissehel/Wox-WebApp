@@ -6,7 +6,7 @@ using Wox.WebApp.Core.Service;
 
 namespace Wox.WebApp.Service
 {
-    public class WebAppResultFinder : WoxResultFinderBase
+    public class WebAppResultFinder : WoxResultFinder
     {
         private IWebAppService WebAppService { get; set; }
 
@@ -15,8 +15,10 @@ namespace Wox.WebApp.Service
             WebAppService = webAppService;
         }
 
-        public void Init()
+        public override void Init()
         {
+            WebAppService.Init();
+
             AddCommand("list", "list [PATTERN] [PATTERN] [...]", "List all url matching patterns", GetListResults);
             AddCommand("config", "config [APP_PATH] [APP_ARGUMENT_PATTERN]", "Configure a new webapp launcher", GetConfigResults);
             AddCommand("add", "add URL [KEYWORD] [KEYWORD] [...]", "Add a new url (or update an existing) with associated keywords", GetAddResults);
@@ -29,7 +31,7 @@ namespace Wox.WebApp.Service
 
         private IEnumerable<WoxResult> GetListResults(WoxQuery query, int position)
         {
-            var terms = query.SearchTerms.Skip(position);
+            var terms = query.GetSearchTermsStarting(position);
             return WebAppService
                 .Search(terms)
                 .Select
@@ -109,7 +111,7 @@ namespace Wox.WebApp.Service
         private IEnumerable<WoxResult> GetRemoveResults(WoxQuery query, int position)
         {
             var webAppItems = WebAppService
-                .Search(query.SearchTerms.Skip(position));
+                .Search(query.GetSearchTermsStarting(position));
             string urlTyped = null;
             if (query.SearchTerms.Length == position + 1)
             {

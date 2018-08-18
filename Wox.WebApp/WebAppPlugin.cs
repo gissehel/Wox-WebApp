@@ -8,9 +8,9 @@ using Wox.WebApp.Service;
 
 namespace Wox.WebApp
 {
-    public class WebAppPlugin : PluginBase<WebAppResultFinder>
+    public class WebAppPlugin : WoxPlugin
     {
-        public override WebAppResultFinder PrepareContext()
+        public override IWoxResultFinder PrepareContext()
         {
             IQueryService queryService = new QueryService();
             IResultService resultService = new ResultService(WoxContextService);
@@ -21,10 +21,7 @@ namespace Wox.WebApp
             IFileGeneratorService fileGeneratorService = new FileGeneratorService();
             IFileReaderService fileReaderService = new FileReaderService();
             IWebAppService webAppService = new WebAppService(dataAccessService, webAppItemRepository, webAppConfigurationRepository, systemWebAppService, fileGeneratorService, fileReaderService);
-            WebAppResultFinder woxWebAppResultFinder = new WebAppResultFinder(WoxContextService, webAppService);
-
-            webAppService.Init();
-            woxWebAppResultFinder.Init();
+            IWoxResultFinder woxWebAppResultFinder = new WebAppResultFinder(WoxContextService, webAppService);
 
             return woxWebAppResultFinder;
         }
