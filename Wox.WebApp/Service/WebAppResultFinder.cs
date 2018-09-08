@@ -23,6 +23,7 @@ namespace Wox.WebApp.Service
             AddCommand("config", "config [APP_PATH] [APP_ARGUMENT_PATTERN]", "Configure a new webapp launcher", GetConfigResults);
             AddCommand("add", "add URL [KEYWORD] [KEYWORD] [...]", "Add a new url (or update an existing) with associated keywords", GetAddResults);
             AddCommand("remove", "remove [URL|PATTERN]", "Remove an existing url", GetRemoveResults);
+            AddCommand("open", "open URL", "Open an url as a web app without saving it", GetOpenResults);
             AddCommand("export", "export", "Export urls to a file", ExportCommandAction);
             AddCommand("import", "import FILENAME", "Import urls from FILENAME", GetImportResults);
 
@@ -147,6 +148,27 @@ namespace Wox.WebApp.Service
             else
             {
                 yield return GetEmptyCommandResult("remove", CommandInfos);
+            }
+        }
+
+        private IEnumerable<WoxResult> GetOpenResults(WoxQuery query, int position)
+        {
+            if (query.SearchTerms.Length == position + 1)
+            {
+                var url = query.SearchTerms[position];
+                yield return GetActionResult
+                (
+                    "open {0}".FormatWith(url),
+                    "Open the web app page [{0}] without saving it",
+                    () =>
+                    {
+                        WebAppService.StartUrl(url);
+                    }
+                );
+            }
+            else
+            {
+                yield return GetEmptyCommandResult("open", CommandInfos);
             }
         }
 
