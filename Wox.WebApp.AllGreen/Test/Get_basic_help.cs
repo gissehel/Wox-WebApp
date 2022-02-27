@@ -32,6 +32,7 @@ namespace Wox.WebApp.AllGreen.Test
             .Check("config [APP_PATH] [APP_ARGUMENT_PATTERN]", "Configure a new webapp launcher")
             .Check("add URL [KEYWORD] [KEYWORD] [...]", "Add a new url (or update an existing) with associated keywords")
             .Check("remove [URL|PATTERN]", "Remove an existing url")
+            .Check("edit [URL|PATTERN] [ -> URL [KEYWORD] [KEYWORD] [...]]", "Edit an existing url")
             .Check("open URL", "Open an url as a web app without saving it")
             .Check("export", "Export urls to a file")
             .Check("import FILENAME", "Import urls from FILENAME")
