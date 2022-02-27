@@ -166,5 +166,15 @@ namespace Wox.WebApp.Service
         {
             DataAccessService.Dispose();
         }
+
+        public WebAppItem GetUrlInfo(string url)
+        {
+            return WebAppItemRepository.GetItem(url);
+        }
+
+        public void EditWebAppItem(string url, string newUrl, string newKeywords)
+        {
+            WebAppItemRepository.EditWebAppItem(url, newUrl, newKeywords);
+        }
     }
 }

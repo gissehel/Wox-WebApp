@@ -67,5 +67,20 @@ namespace Wox.WebApp.Core.Service
         /// </summary>
         /// <param name="path">The file name of the configuration file to export</param>
         void Import(string path);
+
+        /// <summary>
+        /// Get information on an url, or null if no URL match the criteria
+        /// </summary>
+        /// <param name="url">The url</param>
+        /// <returns>The informations about the url</returns>
+        WebAppItem GetUrlInfo(string url);
+
+        /// <summary>
+        /// Edit informations about a web app.
+        /// </summary>
+        /// <param name="url">The url of the current webapp item</param>
+        /// <param name="newUrl">The new url for the webapp item</param>
+        /// <param name="newKeywords">The new keywords to use</param>
+        void EditWebAppItem(string url, string newUrl, string newKeywords);
     }
 }

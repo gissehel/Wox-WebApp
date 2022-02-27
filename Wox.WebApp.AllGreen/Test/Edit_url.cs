@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AllGreen.Lib;
+﻿using AllGreen.Lib;
 using Wox.WebApp.AllGreen.Fixture;
 using Wox.WebApp.AllGreen.Helper;
 
@@ -44,7 +39,7 @@ namespace Wox.WebApp.AllGreen.Test
             .DoAction(f => f.Select_line(1))
             .DoAccept(f => f.Wox_is_displayed())
 
-            .DoCheck(f => f.The_current_query_is(), "wap edit https://bing.com/ -> https://bing.com/ bing search engine")
+            .DoCheck(f => f.The_current_query_is(), "wap edit https://bing.com/ -> https://bing.com/ bing search engine ")
             .DoCheck(f => f.The_number_of_results_is(), "1")
             .DoCheck(f => f.The_title_of_result__is(1), "Edit https://bing.com/")
             .DoCheck(f => f.The_subtitle_of_result__is(1), "Edit the url https://bing.com/ (bing search engine)")
@@ -58,7 +53,7 @@ namespace Wox.WebApp.AllGreen.Test
             .DoReject(f => f.Wox_is_displayed())
             .DoAction(f => f.Display_wox())
 
-            .DoAction(f=>f.Write_query("wap list"))
+            .DoAction(f => f.Write_query("wap list"))
             .EndUsing()
 
 

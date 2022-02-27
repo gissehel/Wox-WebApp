@@ -12,5 +12,9 @@ namespace Wox.WebApp.Core.Service
         void AddItem(WebAppItem item);
 
         void RemoveItem(string url);
+
+        WebAppItem GetItem(string url);
+
+        void EditWebAppItem(string url, string newUrl, string newKeywords);
     }
 }

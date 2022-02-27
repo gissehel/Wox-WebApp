@@ -1,5 +1,6 @@
 ﻿using FluentDataAccess.Core.Service;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Wox.WebApp.Core.Service;
 using Wox.WebApp.DomainModel;
@@ -25,13 +26,15 @@ namespace Wox.WebApp.Service
                 .Execute();
         }
 
+        private string GetSearchField(string url, string keywords) => string.Format("{0} {1}", url, keywords).ToLower();
+
         public void AddItem(WebAppItem item)
         {
             DataAccessService
                 .GetQuery("insert or replace into webapp_item (url, keywords, search) values (@url, @keywords, @search)")
                 .WithParameter("url", item.Url)
                 .WithParameter("keywords", item.Keywords)
-                .WithParameter("search", string.Format("{0} {1}", item.Url, item.Keywords).ToLower())
+                .WithParameter("search", GetSearchField(item.Url, item.Keywords))
                 .Execute();
         }
 
@@ -79,6 +82,42 @@ namespace Wox.WebApp.Service
                 .Reading("keywords", (WebAppItem item, string value) => item.Keywords = value)
                 .Execute()
                 ;
+        }
+
+        public WebAppItem GetItem(string url)
+        {
+            var query = "select id, url, keywords from webapp_item where url=@url order by id";
+            var results = DataAccessService
+                .GetQuery(query)
+                .WithParameter("url", url)
+                .Returning<WebAppItem>()
+                .Reading("id", (WebAppItem item, long value) => item.Id = value)
+                .Reading("url", (WebAppItem item, string value) => item.Url = value)
+                .Reading("keywords", (WebAppItem item, string value) => item.Keywords = value)
+                .Execute()
+                ;
+            try
+            {
+                return results.First();
+            }
+            catch
+            {
+                return null;
+            }
+
+        }
+
+        public void EditWebAppItem(string url, string newUrl, string newKeywords)
+        {
+            var query = "update webapp_item set url=@url, keywords=@keywords, search=@search where url=@oldurl";
+            DataAccessService
+                .GetQuery(query)
+                .WithParameter("oldurl", url)
+                .WithParameter("url", newUrl)
+                .WithParameter("keywords", newKeywords)
+                .WithParameter("search", GetSearchField(newUrl, newKeywords))
+                .Execute()
+            ;
         }
     }
 }

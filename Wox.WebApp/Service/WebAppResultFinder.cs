@@ -23,11 +23,79 @@ namespace Wox.WebApp.Service
             AddCommand("config", "config [APP_PATH] [APP_ARGUMENT_PATTERN]", "Configure a new webapp launcher", GetConfigResults);
             AddCommand("add", "add URL [KEYWORD] [KEYWORD] [...]", "Add a new url (or update an existing) with associated keywords", GetAddResults);
             AddCommand("remove", "remove [URL|PATTERN]", "Remove an existing url", GetRemoveResults);
+            AddCommand("edit", "edit [URL|PATTERN] [ -> URL [KEYWORD] [KEYWORD] [...]]", "Edit an existing url", GetEditResults);
             AddCommand("open", "open URL", "Open an url as a web app without saving it", GetOpenResults);
             AddCommand("export", "export", "Export urls to a file", ExportCommandAction);
             AddCommand("import", "import FILENAME", "Import urls from FILENAME", GetImportResults);
 
             AddDefaultCommand(GetListResults);
+        }
+
+        private IEnumerable<WoxResult> GetEditResults(WoxQuery query, int position)
+        {
+            if (query.SearchTerms.Contains("->"))
+            {
+                var url = query.GetTermOrEmpty(1);
+                var oper = query.GetTermOrEmpty(2);
+                if (oper == "->")
+                {
+                    var newUrl = query.GetTermOrEmpty(3);
+                    var newKeywords = query.GetAllSearchTermsStarting(4);
+                    var webAppItem = WebAppService.GetUrlInfo(url);
+                    var keywords = webAppItem.Keywords;
+
+                    if ((keywords == newKeywords) && (url == newUrl))
+                    {
+                        return new List<WoxResult> {
+                        GetCompletionResultFinal(
+                            string.Format("Edit {0}",url),
+                            string.Format("Edit the url {0} ({1})", url, keywords),
+                            ()=>string.Format("edit {0} -> {0} {1}", url, keywords)
+                        )
+                    };
+                    }
+                    else
+                    {
+                        return new List<WoxResult> {
+                        GetActionResult(
+                            string.Format("Edit {0}",url),
+                            string.Format("Edit the url {0} ({1}) -> {2} ({3})", url, keywords, newUrl, newKeywords),
+                            () =>
+                            {
+                                WebAppService.EditWebAppItem(url, newUrl, newKeywords);
+                            }
+                        )
+                    };
+                    }
+                }
+                else
+                {
+                    return new List<WoxResult> {
+                        GetCompletionResult(
+                            "edit [URL|PATTERN] [ -> URL [KEYWORD] [KEYWORD] [...]]",
+                            "Edit an existing url",
+                            ()=>"edit "
+                        )
+                    };
+                }
+
+                throw new System.NotImplementedException();
+            }
+            else
+            {
+                var terms = query.GetSearchTermsStarting(position);
+                return WebAppService
+                    .Search(terms)
+                    .Select
+                    (
+                        item => GetCompletionResult
+                        (
+                            string.Format("Edit {0}", item.Url),
+                            string.Format("Edit the url {0} ({1})", item.Url, item.Keywords),
+                            () => string.Format("edit {0} -> {0} {1}", item.Url, item.Keywords)
+                        )
+                    );
+            }
         }
 
         private IEnumerable<WoxResult> GetListResults(WoxQuery query, int position)
