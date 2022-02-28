@@ -24,16 +24,22 @@ namespace Wox.WebApp.Service
             DataAccessService
                 .GetQuery("create unique index if not exists webapp_item_url on webapp_item (url)")
                 .Execute();
+            // BUGFIX : If older version had generated a null field for keywords, replace it by an empty string to prevent bugs.
+            DataAccessService
+                .GetQuery("update webapp_item set keywords='' where keywords is null")
+                .Execute();
         }
 
         private string GetSearchField(string url, string keywords) => string.Format("{0} {1}", url, keywords).ToLower();
+
+        private string NormalizeKeywords(string keywords) => keywords != null ? keywords : "";
 
         public void AddItem(WebAppItem item)
         {
             DataAccessService
                 .GetQuery("insert or replace into webapp_item (url, keywords, search) values (@url, @keywords, @search)")
                 .WithParameter("url", item.Url)
-                .WithParameter("keywords", item.Keywords)
+                .WithParameter("keywords", NormalizeKeywords(item.Keywords))
                 .WithParameter("search", GetSearchField(item.Url, item.Keywords))
                 .Execute();
         }
@@ -114,7 +120,7 @@ namespace Wox.WebApp.Service
                 .GetQuery(query)
                 .WithParameter("oldurl", url)
                 .WithParameter("url", newUrl)
-                .WithParameter("keywords", newKeywords)
+                .WithParameter("keywords", NormalizeKeywords(newKeywords))
                 .WithParameter("search", GetSearchField(newUrl, newKeywords))
                 .Execute()
             ;
