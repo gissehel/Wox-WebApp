@@ -1,4 +1,4 @@
-﻿# To intall in Wox
+﻿# To install in Wox
 ```
 wpm install WebApp launcher
 ```
