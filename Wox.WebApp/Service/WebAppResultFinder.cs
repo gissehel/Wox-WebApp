@@ -9,10 +9,12 @@ namespace Wox.WebApp.Service
     public class WebAppResultFinder : WoxResultFinder
     {
         private IWebAppService WebAppService { get; set; }
+        private IHelperService HelperService { get; set; }
 
-        public WebAppResultFinder(IWoxContextService woxContextService, IWebAppService webAppService) : base(woxContextService)
+        public WebAppResultFinder(IWoxContextService woxContextService, IWebAppService webAppService, IHelperService helperService) : base(woxContextService)
         {
             WebAppService = webAppService;
+            HelperService = helperService;
         }
 
         public override void Init()
@@ -20,10 +22,10 @@ namespace Wox.WebApp.Service
             WebAppService.Init();
 
             AddCommand("list", "list [PATTERN] [PATTERN] [...]", "List all url matching patterns", GetListResults);
-            AddCommand("config", "config [APP_PATH] [APP_ARGUMENT_PATTERN]", "Configure a new webapp launcher", GetConfigResults);
+            AddCommand("config", "config [PROFILE] [APP_PATH] [APP_ARGUMENT_PATTERN]", "Configure a new webapp launcher for a profile", GetConfigResults);
             AddCommand("add", "add URL [KEYWORD] [KEYWORD] [...]", "Add a new url (or update an existing) with associated keywords", GetAddResults);
             AddCommand("remove", "remove [URL|PATTERN]", "Remove an existing url", GetRemoveResults);
-            AddCommand("edit", "edit [URL|PATTERN] [ -> URL [KEYWORD] [KEYWORD] [...]]", "Edit an existing url", GetEditResults);
+            AddCommand("edit", "edit [URL|PATTERN] [ -> URL [KEYWORD] [KEYWORD] [...] [\\[PROFILE\\]]", "Edit an existing url", GetEditResults);
             AddCommand("open", "open URL", "Open an url as a web app without saving it", GetOpenResults);
             AddCommand("export", "export", "Export urls to a file", ExportCommandAction);
             AddCommand("import", "import FILENAME", "Import urls from FILENAME", GetImportResults);
@@ -41,16 +43,22 @@ namespace Wox.WebApp.Service
                 {
                     var newUrl = query.GetTermOrEmpty(3);
                     var newKeywords = query.GetAllSearchTermsStarting(4);
+                    string newProfile = null;
+                    if (!HelperService.ExtractProfile(newKeywords,ref newKeywords, ref newProfile))
+                    {
+                        newProfile = "default";
+                    }
                     var webAppItem = WebAppService.GetUrlInfo(url);
                     var keywords = webAppItem.Keywords;
+                    var profile = webAppItem.Profile;
 
-                    if ((keywords == newKeywords) && (url == newUrl))
+                    if ((keywords == newKeywords) && (url == newUrl) && (profile == newProfile))
                     {
                         return new List<WoxResult> {
                         GetCompletionResultFinal(
                             string.Format("Edit {0}",url),
-                            string.Format("Edit the url {0} ({1})", url, keywords),
-                            ()=>string.Format("edit {0} -> {0} {1}", url, keywords)
+                            string.Format("Edit the url {0} ({1}) [{2}]", url, keywords, profile),
+                            ()=>string.Format("edit {0} -> {0} {1} [{2}]", url, keywords, profile)
                         )
                     };
                     }
@@ -59,10 +67,10 @@ namespace Wox.WebApp.Service
                         return new List<WoxResult> {
                         GetActionResult(
                             string.Format("Edit {0}",url),
-                            string.Format("Edit the url {0} ({1}) -> {2} ({3})", url, keywords, newUrl, newKeywords),
+                            string.Format("Edit the url {0} ({1}) [{2}] -> {3} ({4}) [{5}]", url, keywords, profile, newUrl, newKeywords, newProfile),
                             () =>
                             {
-                                WebAppService.EditWebAppItem(url, newUrl, newKeywords);
+                                WebAppService.EditWebAppItem(url, newUrl, newKeywords, newProfile);
                             }
                         )
                     };
@@ -88,11 +96,11 @@ namespace Wox.WebApp.Service
                     .Search(terms)
                     .Select
                     (
-                        item => GetCompletionResult
+                        item => GetCompletionResultFinal
                         (
                             string.Format("Edit {0}", item.Url),
-                            string.Format("Edit the url {0} ({1})", item.Url, item.Keywords),
-                            () => string.Format("edit {0} -> {0} {1}", item.Url, item.Keywords)
+                            string.Format("Edit the url {0} ({1}) [{2}]", item.Url, item.Keywords, item.Profile),
+                            () => string.Format("edit {0} -> {0} {1} [{2}]", item.Url, item.Keywords, item.Profile)
                         )
                     );
             }
@@ -108,10 +116,10 @@ namespace Wox.WebApp.Service
                     item => GetActionResult
                     (
                         string.Format("Start {0}", item.Url),
-                        string.Format("Start the url {0} ({1})", item.Url, item.Keywords),
+                        string.Format("Start the url {0} ({1}) [{2}]", item.Url, item.Keywords, item.Profile),
                         () =>
                         {
-                            WebAppService.StartUrl(item.Url);
+                            WebAppService.StartUrl(item.Url, item.Profile);
                         }
                     )
                 );
@@ -119,39 +127,72 @@ namespace Wox.WebApp.Service
 
         private IEnumerable<WoxResult> GetConfigResults(WoxQuery query, int position)
         {
-            var configuration = WebAppService.GetConfiguration();
             if (query.SearchTerms.Length > position)
             {
-                var launcher = query.SearchTerms[position];
-                string arguments = query.GetAllSearchTermsStarting(position + 1);
-                string argumentsCommandLine = arguments ?? "[APP_ARGUMENT_PATTERN]";
-                string argumentsReal = arguments ?? configuration.WebAppArgumentPattern;
+                var profile = query.SearchTerms[position];
+                var configuration = WebAppService.GetConfiguration(profile);
 
-                string title = string.Format("config {0} {1}", launcher, argumentsCommandLine);
-                string subTitle = string.Format("Change webapp launcher to [{0}] and argument to [{1}]", launcher, argumentsReal);
-                if (!argumentsReal.Contains("{0}"))
+                if (query.SearchTerms.Length > position + 1)
                 {
-                    subTitle = string.Format("You should consider having [{0}] inside arguments. Now it contains only [{1}]", "{0}", argumentsReal);
-                }
-                yield return GetActionResult
-                (
-                    title,
-                    subTitle,
-                    () =>
+                    var launcher = query.SearchTerms[position + 1];
+                    string arguments = query.GetAllSearchTermsStarting(position + 2);
+                    string argumentsCommandLine = arguments ?? "[APP_ARGUMENT_PATTERN]";
+                    string argumentsReal = arguments ?? configuration.WebAppArgumentPattern;
+
+                    string title = string.Format("config {0} {1} {2}", profile, launcher, argumentsCommandLine);
+                    string subTitle = string.Format("Change {0} webapp launcher to [{1}] and argument to [{2}]", profile, launcher, argumentsReal);
+                    if (!argumentsReal.Contains("{0}"))
                     {
-                        WebAppService.UpdateLauncher(launcher, argumentsReal);
+                        subTitle = string.Format("You should consider having [{0}] inside arguments. Now it contains only [{1}]", "{0}", argumentsReal);
                     }
-                );
+                    yield return GetActionResult
+                    (
+                        title,
+                        subTitle,
+                        () =>
+                        {
+                            WebAppService.UpdateLauncher(launcher, argumentsReal, profile);
+                        }
+                    );
+                } 
+                else
+                {
+                    if (configuration == null)
+                    {
+                        yield return GetCompletionResultFinal
+                            (
+                                string.Format("config {0} [APP_PATH] [APP_ARGUMENT_PATTERN]", profile),
+                                "Create a {0} webapp launcher".FormatWith(profile),
+                                () => {
+                                    configuration = WebAppService.GetOrCreateConfiguration(profile);
+                                    return string.Format("config {0} {1} {2}", profile, configuration.WebAppLauncher, configuration.WebAppArgumentPattern);
+                                }
+                            );
+                    }
+                    else
+                    {
+                        yield return GetCompletionResultFinal
+                            (
+                                string.Format("config {0} {1} {2}", profile, configuration.WebAppLauncher, configuration.WebAppArgumentPattern),
+                                "Change {0} webapp launcher to [{1}] and argument to [{2}]".FormatWith(profile, configuration.WebAppLauncher, configuration.WebAppArgumentPattern),
+                                () => string.Format("config {0} {1} {2}", profile, configuration.WebAppLauncher, configuration.WebAppArgumentPattern)
+                            );
+                    }
+                }
             }
             else
             {
                 var emptyResult = GetEmptyCommandResult("config", CommandInfos);
-                yield return GetCompletionResultFinal
-                    (
-                        emptyResult.Title,
-                        "{0} - Select this item to complete the current config".FormatWith(emptyResult.SubTitle),
-                        () => string.Format("config {0} {1}", configuration.WebAppLauncher, configuration.WebAppArgumentPattern)
-                    );
+                foreach (var profile in WebAppService.GetProfiles())
+                {
+                    var configuration = WebAppService.GetConfiguration(profile);
+                    yield return GetCompletionResult
+                        (
+                            string.Format("config {0} [APP_PATH] [APP_ARGUMENT_PATTERN]", profile),
+                            "Configure the {0} launcher - Select this item to complete the current config".FormatWith(profile),
+                            () => string.Format("config {0}", profile)
+                        );
+                }
             }
         }
 
@@ -161,13 +202,15 @@ namespace Wox.WebApp.Service
             if (!string.IsNullOrEmpty(url))
             {
                 var keywords = query.GetAllSearchTermsStarting(position + 1);
+                string profile = "default";
+                HelperService.ExtractProfile(keywords, ref keywords, ref profile);
                 yield return GetActionResult
                     (
-                        string.Format("add {0} {1}", url, keywords),
+                        string.Format("add {0} {1} [{2}]", url, keywords, profile),
                         string.Format("Add the url {0}", url),
                         () =>
                         {
-                            WebAppService.AddWebAppItem(url, keywords);
+                            WebAppService.AddWebAppItem(url, keywords, profile);
                         }
                     );
             }
@@ -230,7 +273,7 @@ namespace Wox.WebApp.Service
                     "Open the web app page [{0}] without saving it",
                     () =>
                     {
-                        WebAppService.StartUrl(url);
+                        WebAppService.StartUrl(url, null);
                     }
                 );
             }

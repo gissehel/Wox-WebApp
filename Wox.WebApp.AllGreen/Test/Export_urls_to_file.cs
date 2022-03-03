@@ -11,7 +11,7 @@ namespace Wox.WebApp.AllGreen.Test
 
             .IsRunnable()
 
-            .Include<Prepare_common_context>()
+            .Include<Prepare_common_context_with_multiple_profiles>()
 
             .Using<Wox_bar_fixture>()
             .DoAction(f => f.Write_query("wap exp"))
@@ -34,9 +34,11 @@ namespace Wox.WebApp.AllGreen.Test
             .UsingList<Last_file_generated_fixture>()
             .With<Last_file_generated_fixture.Result>(f => f.Line)
             .Check("# launcher: chrome.exe")
-            .Check("# argumentsPattern: --app=\"{0}\"")
+            .Check("# argumentsPattern: --app=\"{0}\" --profile-directory=\"Default\"")
+            .Check("# launcher[pro]: chrome.exe")
+            .Check("# argumentsPattern[pro]: --app=\"{0}\" --profile-directory=\"Pro\"")
             .Check("https://google.com/ (google search engine)")
-            .Check("https://bing.com/ (bing search engine)")
+            .Check("https://bing.com/ (bing search engine) [pro]")
             .Check("https://stackoverflow.com/ (questions answers)")
             .Check("https://netflix.com/ (video)")
             .EndUsing()

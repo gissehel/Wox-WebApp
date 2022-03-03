@@ -15,6 +15,6 @@ namespace Wox.WebApp.Core.Service
 
         WebAppItem GetItem(string url);
 
-        void EditWebAppItem(string url, string newUrl, string newKeywords);
+        void EditWebAppItem(string url, string newUrl, string newKeywords, string newProfile);
     }
 }

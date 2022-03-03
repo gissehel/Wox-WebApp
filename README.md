@@ -79,19 +79,91 @@ wap google
 
 If you want to use something else to start your urls as a webapp, you can configure the plugin using `wap config`.
 
-Imagine you have a file called mylauncher.exe that can start webapps given an url as argument. You can then type
+Imagine you have a file called mylauncher.exe that can start webapps given an url as argument. You can then type to edit the default profile:
 
 ```
-wap config mylauncher.exe "{0}"
+wap config default mylauncher.exe "{0}"
 ```
-![(wap config mylauncher.exe "{0}")](doc/06-wap-config-mylauncher.png)
+![(wap config default mylauncher.exe "{0}")](doc/06-wap-config-mylauncher.png)
 
-You can see your current config by simply validating `wap config`, it will auto-complete with current configuration.
+You can also add a new profile named "edge":
+
+```
+wap config edge msedge.exe --app="{0}"
+```
+![(wap config edge msedge.exe --app="{0}")](doc/07-wap-config-edge.png)
+
+You can list the profiles by typing:
+
+```
+wap config
+```
+![(wap config)](doc/08-wap-config.png)
+
+Then, by selecting a profile, it will auto-complete with current configuration.
+
+```
+wap config default chrome.exe --app="{0}" --profile-directory="Default"
+```
+![(wap config default chrome.exe --app="{0}" --profile-directory="Default")](doc/09-wap-config-default.png)
 
 Default configuration is :
+```
+wap config default chrome.exe --app="{0}" --profile-directory="Default"
+```
+## Multiple browsers
+
+You can use the profiles to open some webapp with Chrome, and other webapp with Edge:
 
 ```
-wap config chrome.exe --app="{0}"
+wap config default chrome.exe --app="{0}" --profile-directory="Default"
+wap config edge msedge.exe --app="{0}" --profile-directory="Default"
 ```
 
+And then the following url will be opened by Chrome (default profile):
+```
+wap add https://www.google.com/ search engine google
+```
 
+But the following url will be opened by Edge (edge profile):
+```
+wap add https://www.micrsoft.com/ ms [edge]
+```
+
+## Multiple profiles inside Chrome
+
+You can use the profiles to open some webapp with a Chrome profile, and other webapp with another Chrome profile
+
+```
+wap config default chrome.exe --app="{0}" --profile-directory="Default"
+wap config pro chrome.exe --app="{0}" --profile-directory="Pro"
+```
+
+And then the following url will be opened by Chrome profile "Default":
+```
+wap add https://www.google.com/ search engine google
+```
+
+But the following url will be opened by Chrome profile "Pro" (pro profile):
+```
+wap add https://www.micrsoft.com/ ms [pro]
+```
+
+## Starting some webapp with private mode
+
+You can use the profiles to open some webapp with standard mode, and other webapp with private/incognito mode
+
+```
+wap config default chrome.exe --app="{0}" --profile-directory="Default"
+wap config private chrome.exe --app="{0}" --profile-directory="Default" --incognito
+```
+
+And then the following url will be opened in standard mode:
+```
+wap add https://www.google.com/ search engine google
+```
+
+But the following url will be opened in private mode:
+```
+wap add https://www.micrsoft.com/ ms [private]
+```

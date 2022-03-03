@@ -18,6 +18,7 @@ namespace Wox.WebApp.AllGreen.Helper
         public SystemWebAppServiceMock SystemService { get; set; }
         public IWoxResultFinder WoxWebAppResultFinder { get; set; }
         private IWebAppService WebAppService { get; set; }
+        public IHelperService HelperService { get; set; }
         public FileGeneratorServiceMock FileGeneratorService { get; set; }
         public FileReaderServiceMock FileReaderService { get; set; }
         private string TestName { get; set; }
@@ -35,8 +36,9 @@ namespace Wox.WebApp.AllGreen.Helper
             IWebAppConfigurationRepository webAppConfigurationRepository = new WebAppConfigurationRepository(dataAccessService);
             FileGeneratorServiceMock fileGeneratorService = new FileGeneratorServiceMock();
             FileReaderServiceMock fileReaderService = new FileReaderServiceMock();
-            IWebAppService webAppService = new WebAppService(dataAccessService, webAppItemRepository, webAppConfigurationRepository, systemService, fileGeneratorService, fileReaderService);
-            IWoxResultFinder woxWebAppResultFinder = new WebAppResultFinder(woxContextService, webAppService);
+            IHelperService helperService = new HelperService();
+            IWebAppService webAppService = new WebAppService(dataAccessService, webAppItemRepository, webAppConfigurationRepository, systemService, fileGeneratorService, fileReaderService, helperService);
+            IWoxResultFinder woxWebAppResultFinder = new WebAppResultFinder(woxContextService, webAppService, helperService);
 
             systemService.ApplicationDataPath = GetApplicationDataPath();
 
@@ -47,6 +49,7 @@ namespace Wox.WebApp.AllGreen.Helper
             FileGeneratorService = fileGeneratorService;
             FileReaderService = fileReaderService;
             WoxWebAppResultFinder = woxWebAppResultFinder;
+            HelperService = helperService;
 
             WoxContextService.AddQueryFetcher("wap", WoxWebAppResultFinder);
         }

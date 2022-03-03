@@ -1,4 +1,5 @@
-﻿using Wox.WebApp.DomainModel;
+﻿using System.Collections.Generic;
+using Wox.WebApp.DomainModel;
 
 namespace Wox.WebApp.Core.Service
 {
@@ -6,7 +7,9 @@ namespace Wox.WebApp.Core.Service
     {
         void Init();
 
-        WebAppConfiguration GetConfiguration();
+        IEnumerable<WebAppConfiguration> GetConfigurations();
+
+        WebAppConfiguration GetConfiguration(string profile);
 
         void SaveConfiguration(WebAppConfiguration configuration);
     }

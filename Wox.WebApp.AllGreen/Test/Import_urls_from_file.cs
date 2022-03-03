@@ -16,9 +16,11 @@ namespace Wox.WebApp.AllGreen.Test
             .UsingSetup<Generate_file_fixture>()
             .With(f => f.Line)
             .Enter("# launcher: chrome.exe")
-            .Enter("# argumentsPattern: --app=\"{0}\"")
+            .Enter("# argumentsPattern: --app=\"{0}\" --profile-directory=\"Default\"")
+            .Enter("# launcher[pro]: msedge.exe")
+            .Enter("# argumentsPattern[pro]: --app=\"{0}\" --profile-directory=\"Pro\"")
             .Enter("https://github.com/ (dev opensource repository)")
-            .Enter("https://microsoft.com/ (corporate windows)")
+            .Enter("https://microsoft.com/ (corporate windows) [pro]")
             .EndUsing()
 
             .Using<Generate_file_fixture>()
@@ -74,7 +76,24 @@ namespace Wox.WebApp.AllGreen.Test
             .DoAction(f => f.Write_query(@"wap git"))
             .DoCheck(f => f.The_number_of_results_is(), "1")
             .DoCheck(f => f.The_title_of_result__is(1), "Start https://github.com/")
-            .DoCheck(f => f.The_subtitle_of_result__is(1), "Start the url https://github.com/ (dev opensource repository)")
+            .DoCheck(f => f.The_subtitle_of_result__is(1), "Start the url https://github.com/ (dev opensource repository) [default]")
+
+            .DoAction(f => f.Write_query(@"wap windo"))
+            .DoCheck(f => f.The_number_of_results_is(), "1")
+            .DoCheck(f => f.The_title_of_result__is(1), "Start https://microsoft.com/")
+            .DoCheck(f => f.The_subtitle_of_result__is(1), "Start the url https://microsoft.com/ (corporate windows) [pro]")
+
+            .DoAction(f => f.Write_query(@"wap config"))
+            .DoCheck(f => f.The_number_of_results_is(), "2")
+            .DoCheck(f => f.The_title_of_result__is(1), "config default [APP_PATH] [APP_ARGUMENT_PATTERN]")
+            .DoCheck(f => f.The_subtitle_of_result__is(1), "Configure the default launcher - Select this item to complete the current config")
+            .DoCheck(f => f.The_title_of_result__is(2), "config pro [APP_PATH] [APP_ARGUMENT_PATTERN]")
+            .DoCheck(f => f.The_subtitle_of_result__is(2), "Configure the pro launcher - Select this item to complete the current config")
+
+            .DoAction(f => f.Write_query(@"wap config pro"))
+            .DoCheck(f => f.The_number_of_results_is(), "1")
+            .DoCheck(f => f.The_title_of_result__is(1), "config pro msedge.exe --app=\"{0}\" --profile-directory=\"Pro\"")
+            .DoCheck(f => f.The_subtitle_of_result__is(1), "Change pro webapp launcher to [msedge.exe] and argument to [--app=\"{0}\" --profile-directory=\"Pro\"]")
 
             .EndUsing()
 

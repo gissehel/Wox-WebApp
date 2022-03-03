@@ -22,7 +22,9 @@ namespace Wox.WebApp.Service
 
         private IFileReaderService FileReaderService { get; set; }
 
-        public WebAppService(IDataAccessService dataAccessService, IWebAppItemRepository webAppItemRepository, IWebAppConfigurationRepository webAppConfigurationRepository, ISystemWebAppService systemService, IFileGeneratorService fileGeneratorService, IFileReaderService fileReaderService)
+        private IHelperService HelperService { get; set; }
+
+        public WebAppService(IDataAccessService dataAccessService, IWebAppItemRepository webAppItemRepository, IWebAppConfigurationRepository webAppConfigurationRepository, ISystemWebAppService systemService, IFileGeneratorService fileGeneratorService, IFileReaderService fileReaderService, IHelperService helperService)
         {
             DataAccessService = dataAccessService;
             WebAppItemRepository = webAppItemRepository;
@@ -30,6 +32,7 @@ namespace Wox.WebApp.Service
             SystemService = systemService;
             FileGeneratorService = fileGeneratorService;
             FileReaderService = fileReaderService;
+            HelperService = helperService;
         }
 
         public void Init()
@@ -38,24 +41,26 @@ namespace Wox.WebApp.Service
             WebAppItemRepository.Init();
             WebAppConfigurationRepository.Init();
 
-            var configuration = WebAppConfigurationRepository.GetConfiguration();
-            if (configuration == null)
+            var configurations = WebAppConfigurationRepository.GetConfigurations();
+            if (configurations == null)
             {
-                configuration = new WebAppConfiguration()
+                var configuration = new WebAppConfiguration()
                 {
+                    Profile = "default",
                     WebAppLauncher = "chrome.exe",
-                    WebAppArgumentPattern = "--app=\"{0}\""
+                    WebAppArgumentPattern = "--app=\"{0}\" --profile-directory=\"Default\""
                 };
                 WebAppConfigurationRepository.SaveConfiguration(configuration);
             }
         }
 
-        public void AddWebAppItem(string url, string keywords)
+        public void AddWebAppItem(string url, string keywords, string profile)
         {
             var item = new WebAppItem
             {
                 Url = url,
                 Keywords = keywords,
+                Profile = profile,
             };
             WebAppItemRepository.AddItem(item);
         }
@@ -65,12 +70,15 @@ namespace Wox.WebApp.Service
             return WebAppItemRepository.SearchItems(terms);
         }
 
-        public void UpdateLauncher(string launcher, string argumentPattern)
+        public void UpdateLauncher(string launcher, string argumentPattern, string profile)
         {
-            var configuration = WebAppConfigurationRepository.GetConfiguration();
+            var configuration = WebAppConfigurationRepository.GetConfiguration(profile);
             if (configuration == null)
             {
-                configuration = new WebAppConfiguration();
+                configuration = new WebAppConfiguration() 
+                { 
+                    Profile = profile,
+                };
             }
             configuration.WebAppLauncher = launcher;
             configuration.WebAppArgumentPattern = argumentPattern;
@@ -78,17 +86,46 @@ namespace Wox.WebApp.Service
             WebAppConfigurationRepository.SaveConfiguration(configuration);
         }
 
-        public void StartUrl(string url)
+        public void StartUrl(string url, string profile)
         {
-            var configuration = WebAppConfigurationRepository.GetConfiguration();
-            var launcher = configuration.WebAppLauncher;
-            var argumentsPattern = configuration.WebAppArgumentPattern;
+            var configuration = WebAppConfigurationRepository.GetConfiguration(profile);
+            if (configuration != null)
+            {
+                var launcher = configuration.WebAppLauncher;
+                var argumentsPattern = configuration.WebAppArgumentPattern;
 
-            var arguments = string.Format(argumentsPattern, url);
-            SystemService.StartCommandLine(launcher, arguments);
+                var arguments = string.Format(argumentsPattern, url);
+                SystemService.StartCommandLine(launcher, arguments);
+            }
         }
 
-        public WebAppConfiguration GetConfiguration() => WebAppConfigurationRepository.GetConfiguration();
+        public WebAppConfiguration GetConfiguration(string profile) => WebAppConfigurationRepository.GetConfiguration(profile);
+        public WebAppConfiguration GetOrCreateConfiguration(string profile)
+        {
+            var configuration = WebAppConfigurationRepository.GetConfiguration(profile);
+            if (configuration == null)
+            {
+                configuration = new WebAppConfiguration()
+                {
+                    Profile = profile,
+                    WebAppLauncher = "chrome.exe",
+                    WebAppArgumentPattern = "--app=\"{0}\" --profile-directory=\"Default\""
+                };
+                WebAppConfigurationRepository.SaveConfiguration(configuration);
+            }
+            return WebAppConfigurationRepository.GetConfiguration(profile);
+        }
+
+        public IEnumerable<string> GetProfiles() =>
+            WebAppConfigurationRepository
+            .GetConfigurations()
+            .Select((configuration) => configuration.Profile);
+
+        public Dictionary<string, WebAppConfiguration> GetConfigurations() =>
+            WebAppConfigurationRepository
+            .GetConfigurations()
+            .GroupBy((WebAppConfiguration webAppConfiguration) => webAppConfiguration.Profile)
+            .ToDictionary(g => g.Key, g => g.ToList().First());
 
         public void RemoveUrl(string url) => WebAppItemRepository.RemoveItem(url);
 
@@ -99,12 +136,32 @@ namespace Wox.WebApp.Service
             var exportFullFilename = Path.Combine(exportDirectory, exportFilename);
             using (var fileGenerator = FileGeneratorService.CreateGenerator(exportFullFilename))
             {
-                var configuration = GetConfiguration();
-                fileGenerator.AddLine(string.Format("# launcher: {0}", configuration.WebAppLauncher));
-                fileGenerator.AddLine(string.Format("# argumentsPattern: {0}", configuration.WebAppArgumentPattern));
+                var configurations = GetConfigurations();
+                if (configurations.ContainsKey("default"))
+                {
+                    var configuration = configurations["default"];
+                    fileGenerator.AddLine(string.Format("# launcher: {0}", configuration.WebAppLauncher));
+                    fileGenerator.AddLine(string.Format("# argumentsPattern: {0}", configuration.WebAppArgumentPattern));
+                }
+                foreach (var configuration in configurations.Values)
+                {
+                    if (configuration.Profile != "default")
+                    {
+                        fileGenerator.AddLine(string.Format("# launcher[{1}]: {0}", configuration.WebAppLauncher, configuration.Profile));
+                        fileGenerator.AddLine(string.Format("# argumentsPattern[{1}]: {0}", configuration.WebAppArgumentPattern, configuration.Profile));
+                    }
+                }
                 foreach (var webAppItem in WebAppItemRepository.SearchItems(new List<string>()))
                 {
-                    fileGenerator.AddLine(string.Format("{0} ({1})", webAppItem.Url, webAppItem.Keywords));
+                    if (webAppItem.Profile == "default")
+                    {
+                        fileGenerator.AddLine(string.Format("{0} ({1})", webAppItem.Url, webAppItem.Keywords));
+                    }
+                    else
+                    {
+                        fileGenerator.AddLine(string.Format("{0} ({1}) [{2}]", webAppItem.Url, webAppItem.Keywords, webAppItem.Profile));
+                    }
+                    
                 }
                 fileGenerator.Generate();
             }
@@ -128,7 +185,11 @@ namespace Wox.WebApp.Service
                             var indexOfSeperater = line.IndexOf(":");
                             var key = line.Substring(0, indexOfSeperater).Trim(' ', '\t', '\r', '\n');
                             var value = line.Substring(indexOfSeperater + 1, line.Length - indexOfSeperater - 1).Trim(' ', '\t', '\r', '\n');
-                            var configuration = GetConfiguration();
+                            string profile = null;
+                            HelperService.ExtractProfile(key, ref key, ref profile);
+                            key = key.TrimStart('#').Trim(' ', '\t', '\r', '\n');
+
+                            var configuration = GetOrCreateConfiguration(profile);
                             var changed = false;
                             if (key == "launcher")
                             {
@@ -152,9 +213,15 @@ namespace Wox.WebApp.Service
                         var url = elements[0];
                         var keywords = string.Join(" ", elements.Skip(1).Where(e => e.Length > 0).ToArray());
                         keywords = keywords.TrimStart('(', ' ', '\t', '\r', '\n').TrimEnd(')', ' ', '\t', '\r', '\n');
+                        string profile = null;
+                        if (HelperService.ExtractProfile(keywords, ref keywords, ref profile))
+                        {
+                            keywords = keywords.TrimStart('(', ' ', '\t', '\r', '\n').TrimEnd(')', ' ', '\t', '\r', '\n');
+                        }
+
                         if (!string.IsNullOrEmpty(url))
                         {
-                            AddWebAppItem(url, keywords);
+                            AddWebAppItem(url, keywords, profile);
                         }
                     }
                     line = fileReader.ReadLine();
@@ -172,9 +239,9 @@ namespace Wox.WebApp.Service
             return WebAppItemRepository.GetItem(url);
         }
 
-        public void EditWebAppItem(string url, string newUrl, string newKeywords)
+        public void EditWebAppItem(string url, string newUrl, string newKeywords, string newProfile)
         {
-            WebAppItemRepository.EditWebAppItem(url, newUrl, newKeywords);
+            WebAppItemRepository.EditWebAppItem(url, newUrl, newKeywords, newProfile);
         }
     }
 }

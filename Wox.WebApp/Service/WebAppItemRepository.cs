@@ -16,10 +16,41 @@ namespace Wox.WebApp.Service
             DataAccessService = dataAccessService;
         }
 
+        private void UpgradeForProfile()
+        {
+            try
+            {
+                DataAccessService.GetQuery("select id from webapp_item").Execute();
+                try
+                {
+                    DataAccessService.GetQuery("select profile from webapp_item").Execute();
+                }
+                catch (System.Data.SQLite.SQLiteException)
+                {
+                    DataAccessService
+                        .GetQuery(
+                            "create temp table webapp_item_update (id integer primary key, url text, keywords text, search text, profile text);" +
+                            "insert into webapp_item_update (id, url, keywords, search, profile) select id, url, keywords, search, 'default' from webapp_item order by id;" +
+                            "drop table webapp_item;" +
+                            "create table if not exists webapp_item (id integer primary key, url text, keywords text, search text, profile text);" +
+                            "insert into webapp_item (id, url, keywords, search, profile) select id, url, keywords, search, profile from webapp_item_update order by id;" +
+                            "drop table webapp_item_update;"
+                        )
+                        .Execute();
+                }
+            }
+            catch (System.Data.SQLite.SQLiteException)
+            {
+                // No updagre needed
+            }
+
+        }
+
         public void Init()
         {
+            UpgradeForProfile();
             DataAccessService
-                .GetQuery("create table if not exists webapp_item (id integer primary key, url text, keywords text, search text)")
+                .GetQuery("create table if not exists webapp_item (id integer primary key, url text, keywords text, search text, profile text)")
                 .Execute();
             DataAccessService
                 .GetQuery("create unique index if not exists webapp_item_url on webapp_item (url)")
@@ -34,13 +65,16 @@ namespace Wox.WebApp.Service
 
         private string NormalizeKeywords(string keywords) => keywords != null ? keywords : "";
 
+        private string GetProfile(string profile) => profile ?? "default";
+
         public void AddItem(WebAppItem item)
         {
             DataAccessService
-                .GetQuery("insert or replace into webapp_item (url, keywords, search) values (@url, @keywords, @search)")
+                .GetQuery("insert or replace into webapp_item (url, keywords, search, profile) values (@url, @keywords, @search, @profile)")
                 .WithParameter("url", item.Url)
                 .WithParameter("keywords", NormalizeKeywords(item.Keywords))
                 .WithParameter("search", GetSearchField(item.Url, item.Keywords))
+                .WithParameter("profile", GetProfile(item.Profile))
                 .Execute();
         }
 
@@ -54,7 +88,7 @@ namespace Wox.WebApp.Service
 
         public IEnumerable<WebAppItem> SearchItems(IEnumerable<string> terms)
         {
-            var builder = new StringBuilder("select id, url, keywords from webapp_item ");
+            var builder = new StringBuilder("select id, url, keywords, profile from webapp_item ");
             int index = 0;
             foreach (var term in terms)
             {
@@ -86,13 +120,14 @@ namespace Wox.WebApp.Service
                 .Reading("id", (WebAppItem item, long value) => item.Id = value)
                 .Reading("url", (WebAppItem item, string value) => item.Url = value)
                 .Reading("keywords", (WebAppItem item, string value) => item.Keywords = value)
+                .Reading("profile", (WebAppItem item, string value) => item.Profile = value)
                 .Execute()
                 ;
         }
 
         public WebAppItem GetItem(string url)
         {
-            var query = "select id, url, keywords from webapp_item where url=@url order by id";
+            var query = "select id, url, keywords, profile from webapp_item where url=@url order by id";
             var results = DataAccessService
                 .GetQuery(query)
                 .WithParameter("url", url)
@@ -100,6 +135,7 @@ namespace Wox.WebApp.Service
                 .Reading("id", (WebAppItem item, long value) => item.Id = value)
                 .Reading("url", (WebAppItem item, string value) => item.Url = value)
                 .Reading("keywords", (WebAppItem item, string value) => item.Keywords = value)
+                .Reading("profile", (WebAppItem item, string value) => item.Profile = value)
                 .Execute()
                 ;
             try
@@ -113,15 +149,16 @@ namespace Wox.WebApp.Service
 
         }
 
-        public void EditWebAppItem(string url, string newUrl, string newKeywords)
+        public void EditWebAppItem(string url, string newUrl, string newKeywords, string newProfile)
         {
-            var query = "update webapp_item set url=@url, keywords=@keywords, search=@search where url=@oldurl";
+            var query = "update webapp_item set url=@url, keywords=@keywords, search=@search, profile=@profile where url=@oldurl";
             DataAccessService
                 .GetQuery(query)
                 .WithParameter("oldurl", url)
                 .WithParameter("url", newUrl)
                 .WithParameter("keywords", NormalizeKeywords(newKeywords))
                 .WithParameter("search", GetSearchField(newUrl, newKeywords))
+                .WithParameter("profile", GetProfile(newProfile))
                 .Execute()
             ;
         }

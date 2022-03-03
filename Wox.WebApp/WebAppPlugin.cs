@@ -20,8 +20,9 @@ namespace Wox.WebApp
             IWebAppConfigurationRepository webAppConfigurationRepository = new WebAppConfigurationRepository(dataAccessService);
             IFileGeneratorService fileGeneratorService = new FileGeneratorService();
             IFileReaderService fileReaderService = new FileReaderService();
-            IWebAppService webAppService = new WebAppService(dataAccessService, webAppItemRepository, webAppConfigurationRepository, systemWebAppService, fileGeneratorService, fileReaderService);
-            IWoxResultFinder woxWebAppResultFinder = new WebAppResultFinder(WoxContextService, webAppService);
+            IHelperService helperService = new HelperService();
+            IWebAppService webAppService = new WebAppService(dataAccessService, webAppItemRepository, webAppConfigurationRepository, systemWebAppService, fileGeneratorService, fileReaderService, helperService);
+            IWoxResultFinder woxWebAppResultFinder = new WebAppResultFinder(WoxContextService, webAppService, helperService);
 
             return woxWebAppResultFinder;
         }

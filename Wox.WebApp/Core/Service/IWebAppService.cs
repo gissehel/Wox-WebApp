@@ -23,26 +23,43 @@ namespace Wox.WebApp.Core.Service
         /// </summary>
         /// <param name="url">The url of the web app</param>
         /// <param name="keywords">The keywords used for search</param>
-        void AddWebAppItem(string url, string keywords);
+        /// <param name="profile">The profile to use</param>
+        void AddWebAppItem(string url, string keywords, string profile);
 
         /// <summary>
         /// Update the application to use to browse the webapp
         /// </summary>
         /// <param name="launcher">The executable to use</param>
         /// <param name="argumentPattern">The command line arguments to pass (used a template)</param>
-        void UpdateLauncher(string launcher, string argumentPattern);
+        /// <param name="profile">The profile to use</param>
+        void UpdateLauncher(string launcher, string argumentPattern, string profile);
 
         /// <summary>
-        /// Start a web app given it's url
+        /// Start a web app given it's url and it's profile
         /// </summary>
         /// <param name="url">The url of the web app to start</param>
-        void StartUrl(string url);
+        /// <param name="profile">The profile to use</param>
+        void StartUrl(string url, string profile);
 
         /// <summary>
-        /// Get the current configuration
+        /// Get the configuration for a profile
         /// </summary>
+        /// <param name="profile">The profile to use</param>
         /// <returns>A WebAppConfigration instance</returns>
-        WebAppConfiguration GetConfiguration();
+        WebAppConfiguration GetConfiguration(string profile);
+
+        /// <summary>
+        /// Get or create the configuration for a profile
+        /// </summary>
+        /// <param name="profile">The profile to use</param>
+        /// <returns>A WebAppConfigration instance</returns>
+        WebAppConfiguration GetOrCreateConfiguration(string profile);
+
+        /// <summary>
+        /// Get the list of all available profiles
+        /// </summary>
+        /// <returns>A list of profile names</returns>
+        IEnumerable<string> GetProfiles();
 
         /// <summary>
         /// Remove an existing web app given it's url.
@@ -81,6 +98,7 @@ namespace Wox.WebApp.Core.Service
         /// <param name="url">The url of the current webapp item</param>
         /// <param name="newUrl">The new url for the webapp item</param>
         /// <param name="newKeywords">The new keywords to use</param>
-        void EditWebAppItem(string url, string newUrl, string newKeywords);
+        /// <param name="newProfile">The new profile to use</param>
+        void EditWebAppItem(string url, string newUrl, string newKeywords, string newProfile);
     }
 }

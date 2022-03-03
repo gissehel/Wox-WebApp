@@ -60,9 +60,9 @@ namespace Wox.WebApp.AllGreen.Test
 
             .UsingList<Wox_results_fixture>()
             .With<Wox_results_fixture.Result>(f => f.Title, f => f.SubTitle)
-            .Check("Start https://google.com/", "Start the url https://google.com/ (google search engine)")
-            .Check("Start https://stackoverflow.com/", "Start the url https://stackoverflow.com/ (questions answers)")
-            .Check("Start https://netflix.com/", "Start the url https://netflix.com/ (video)")
+            .Check("Start https://google.com/", "Start the url https://google.com/ (google search engine) [default]")
+            .Check("Start https://stackoverflow.com/", "Start the url https://stackoverflow.com/ (questions answers) [default]")
+            .Check("Start https://netflix.com/", "Start the url https://netflix.com/ (video) [default]")
             .EndUsing()
 
             .EndTest();
