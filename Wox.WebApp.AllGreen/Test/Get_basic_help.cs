@@ -36,6 +36,7 @@ namespace Wox.WebApp.AllGreen.Test
             .Check("open URL", "Open an url as a web app without saving it")
             .Check("export", "Export urls to a file")
             .Check("import FILENAME", "Import urls from FILENAME")
+            .Check("help", "Wox.WebApp version 0.0 - (Go to Wox.WebApp main website)")
             .EndUsing()
 
              .Using<Wox_bar_fixture>()
