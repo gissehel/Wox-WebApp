@@ -19,7 +19,7 @@ namespace Wox.WebApp.AllGreen.Test
             .DoAction(f => f.Write_query("wap add https://bing.com ms search"))
             .DoCheck(f => f.The_number_of_results_is(), "1")
             .DoCheck(f => f.The_title_of_result__is(1), "add https://bing.com ms search [default]")
-            .DoCheck(f => f.The_subtitle_of_result__is(1), "Add the url https://bing.com")
+            .DoCheck(f => f.The_subtitle_of_result__is(1), "Add the url https://bing.com with keywords (ms search) and using profile [default]")
             .DoAction(f => f.Select_line(1))
             .DoReject(f => f.Wox_is_displayed())
             .DoAction(f => f.Display_wox())

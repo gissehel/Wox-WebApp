@@ -207,7 +207,7 @@ namespace Wox.WebApp.Service
                 yield return GetActionResult
                     (
                         string.Format("add {0} {1} [{2}]", url, keywords, profile),
-                        string.Format("Add the url {0}", url),
+                        string.Format("Add the url {0} with keywords ({1}) and using profile [{2}]", url, keywords, profile),
                         () =>
                         {
                             WebAppService.AddWebAppItem(url, keywords, profile);
