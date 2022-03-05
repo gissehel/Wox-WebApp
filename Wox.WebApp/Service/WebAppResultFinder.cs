@@ -275,16 +275,29 @@ namespace Wox.WebApp.Service
 
         private IEnumerable<WoxResult> GetOpenResults(WoxQuery query, int position)
         {
+            string profile = "default";
+            bool isValid = false;
+
             if (query.SearchTerms.Length == position + 1)
+            {
+                isValid = true;
+            }
+            if ((query.SearchTerms.Length == position + 2) && query.SearchTerms[position + 1].StartsWith("[") && query.SearchTerms[position + 1].EndsWith("]"))
+            {
+                isValid = true;
+                profile = query.SearchTerms[position + 1].TrimStart('[').TrimEnd(']');
+            }
+
+            if (isValid)
             {
                 var url = query.SearchTerms[position];
                 yield return GetActionResult
                 (
                     "open {0}".FormatWith(url),
-                    "Open the web app page [{0}] without saving it",
+                    "Open the web app page [{0}] with profile [{1}] without saving it".FormatWith(url, profile),
                     () =>
                     {
-                        WebAppService.StartUrl(url, null);
+                        WebAppService.StartUrl(url, profile);
                     }
                 );
             }
