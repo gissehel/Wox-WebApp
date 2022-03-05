@@ -11,10 +11,16 @@ namespace Wox.WebApp.Service
         private IWebAppService WebAppService { get; set; }
         private IHelperService HelperService { get; set; }
 
-        public WebAppResultFinder(IWoxContextService woxContextService, IWebAppService webAppService, IHelperService helperService) : base(woxContextService)
+        private IApplicationInformationService ApplicationInformationService { get; set; }
+
+        private ISystemWebAppService SystemWebAppService { get; set; }
+
+        public WebAppResultFinder(IWoxContextService woxContextService, IWebAppService webAppService, IHelperService helperService, IApplicationInformationService applicationInformationService, ISystemWebAppService systemWebAppService) : base(woxContextService)
         {
             WebAppService = webAppService;
             HelperService = helperService;
+            ApplicationInformationService = applicationInformationService;
+            SystemWebAppService = systemWebAppService;
         }
 
         public override void Init()
@@ -29,9 +35,14 @@ namespace Wox.WebApp.Service
             AddCommand("open", "open URL", "Open an url as a web app without saving it", GetOpenResults);
             AddCommand("export", "export", "Export urls to a file", ExportCommandAction);
             AddCommand("import", "import FILENAME", "Import urls from FILENAME", GetImportResults);
+            AddCommand("help", "help", HelpSubtitle, HelpCommand);
 
             AddDefaultCommand(GetListResults);
         }
+
+        private string HelpSubtitle => string.Format("{0} version {1} - (Go to {0} main web site)", ApplicationInformationService.ApplicationName, ApplicationInformationService.Version);
+
+        private void HelpCommand() => SystemWebAppService.OpenUrl(ApplicationInformationService.HomepageUrl);
 
         private IEnumerable<WoxResult> GetEditResults(WoxQuery query, int position)
         {

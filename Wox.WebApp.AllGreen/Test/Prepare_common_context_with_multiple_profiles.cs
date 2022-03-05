@@ -9,6 +9,12 @@ namespace Wox.WebApp.AllGreen.Test
         public override void DoTest() =>
             StartTest()
 
+            .Using<Application_information_fixture>()
+            .DoAction(f => f.Application_name_is("Wox.WebApp"))
+            .DoAction(f => f.Application_verison_is("0.0"))
+            .DoAction(f => f.Application_url_is("https://github.com/gissehel/Wox-WebApp"))
+            .EndUsing()
+
             .Using<Wox_bar_fixture>()
             .DoAction(f => f.Start_the_bar())
 
@@ -36,6 +42,7 @@ namespace Wox.WebApp.AllGreen.Test
             .DoAction(f => f.Select_line(1))
 
             .DoAction(f => f.Display_wox())
+            .DoAction(f => f.Write_query(""))
             .EndUsing()
 
             .EndTest();

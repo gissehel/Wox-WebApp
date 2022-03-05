@@ -11,8 +11,9 @@ namespace Wox.WebApp.AllGreen.Test
 
             .IsRunnable()
 
+            .Include<Prepare_common_context_with_multiple_profiles>()
+
             .Using<Wox_bar_fixture>()
-            .DoAction(f => f.Start_the_bar())
             .DoAction(f => f.Display_wox())
             .DoAccept(f => f.Wox_is_displayed())
             .DoCheck(f => f.The_current_query_is(), "")
@@ -36,7 +37,7 @@ namespace Wox.WebApp.AllGreen.Test
             .Check("open URL", "Open an url as a web app without saving it")
             .Check("export", "Export urls to a file")
             .Check("import FILENAME", "Import urls from FILENAME")
-            .Check("help", "Wox.WebApp version 0.0 - (Go to Wox.WebApp main website)")
+            .Check("help", "Wox.WebApp version 0.0 - (Go to Wox.WebApp main web site)")
             .EndUsing()
 
              .Using<Wox_bar_fixture>()

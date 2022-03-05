@@ -11,8 +11,9 @@ namespace Wox.WebApp.AllGreen.Test
 
             .IsRunnable()
 
+            .Include<Prepare_common_context_with_multiple_profiles>()
+
             .Using<Wox_bar_fixture>()
-            .DoAction(f => f.Start_the_bar())
             .DoAction(f => f.Display_wox())
             .DoAccept(f => f.Wox_is_displayed())
             .DoCheck(f => f.The_current_query_is(), "")
@@ -28,7 +29,7 @@ namespace Wox.WebApp.AllGreen.Test
 
             .UsingList<Wox_results_fixture>()
             .With<Wox_results_fixture.Result>(f => f.Title, f => f.SubTitle)
-            .Check("help", "Wox-WebApp version 0.0 - (Go to Wox-WebApp main website)")
+            .Check("help", "Wox.WebApp version 0.0 - (Go to Wox.WebApp main web site)")
             .EndUsing()
 
             .UsingList<Url_opened_fixture>()
